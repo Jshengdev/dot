@@ -71,7 +71,8 @@ dot/
 ├── design/                    ← FROZEN taste library (the design IS locked — do not edit, build to it)
 │   ├── README.md · 00-PRINCIPLES.md · 01-TOKENS.md · tokens.css
 │   ├── 02-MOTION.md · 03-COMPONENTS.md · 04-FLOW.md
-│   └── 05-NEW-BRAND.md        ← the clean-blue skin → READ THIS for DOT's look
+│   ├── 05-NEW-BRAND.md        ← the clean-blue skin → READ THIS for DOT's look
+│   └── moodboard/             ← references we're recreating + FINGERPRINT.md (Johnny's 4 pillars)
 ├── docs/                      ← canonical context (read order above)
 │   ├── MISSION-INTAKE.md      ← ⏳ Johnny drops the mission here (the only missing piece)
 │   ├── GOAL.md                ← the /goal kickoff that launches the build (halts if mission blank)
@@ -79,7 +80,8 @@ dot/
 │   ├── CONSTRAINTS.md · BUILD-LOOP.md · DEMO-SCRIPT.md · SPONSORS.md
 │   ├── KEYS.md · PRIZE-PLAN.md · DESIGN.md · OPEN-QUESTIONS.md
 │   └── reference/             ← deep planning docs (added as written)
-├── packages/                  ← ⏳ MISSION TODO: lands in S0/S1 once the stack (M5) is chosen
+├── packages/
+│   ├── lab/                   ← the EXPERIMENTAL visual window (Vite) — hone visual assets in clean-blue [live]
 │   ├── frontend/              ← the conversation surface (Next + the design system)  [planned]
 │   └── backend/               ← the engine / node graph                              [planned]
 ├── data/                      ← cached demo inputs (fallback if live path fails)     [planned]

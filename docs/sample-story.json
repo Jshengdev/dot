@@ -1,0 +1,150 @@
+{
+  "_note": "THE LOCKED DEMO HERO. Real two-truths output from a live grok-4.20-0309-reasoning call on Johnny's journal (2026-06-13). The split fields — feeling_validation / objective / subjective / delta / risk / provider_summary — are the REAL model output and are PRESERVED VERBATIM (the demo can replay this exactly, or re-run live; the live engine produces the same shape). Everything else (events[], timeline[], check_ins[], grounding{}, provider_report{}, stat_sheet{}) is a synthetic seed so the connect-the-dots UI, the staggered iMessage check-ins, the GAD-7 grounding metadata, the risk→988 handoff, and the provider report card all have data to render. The grounding is METADATA ONLY — it maps symptoms to validated GAD-7 items for the provider's benefit; it is NEVER surfaced to the user as a clinical score or verdict (per INTAKE-QUESTIONS.md: DOT describes, never diagnoses). Builder: copy into packages/sample (or packages/backend) and render the UI from this shape.",
+  "id": "anxiety-hero",
+  "kind": "mental health / anxiety / panic — LOCKED DEMO HERO",
+  "userId": "demo",
+  "createdAt": "2026-06-13",
+  "transcript": {
+    "journal": "I think I've had at least one panic attack a day this week haha. After every club event. My chest hurts like hell. I can't breathe, I can't even see anything because my vision is blurry bc I don't get enough air. It hurtsssss. It flipping hurts. I end up scratching my arms during club meetings to keep myself calm bc otherwise I just can't breathe I can't concentrate. Life lowkey sucks right now. All I want to do is sleep forever and forever. I'm so exhausted. But I also can't, if I stop moving at any point it feels like I'm missing out on too much.",
+    "said": "It was a long week but not too bad. I think im just a very nervous person. Doing all of these club activities is stressing me out a little my chest hurts a bit but we're lowkey chilling."
+  },
+  "feeling_validation": "The intense chest pain, breathlessness, blurry vision, and exhaustion you're describing are real and sound incredibly painful and overwhelming, and it's valid to feel how much it hurts.",
+  "objective": [
+    "At least one panic attack per day this week, occurring after every club event.",
+    "Severe chest pain, inability to breathe, and blurred vision due to insufficient air.",
+    "Scratching arms during club meetings to self-calm, maintain concentration, and avoid worse breathing issues.",
+    "Profound exhaustion with explicit desire to 'sleep forever,' yet unable to stop moving due to fear of missing out."
+  ],
+  "subjective": [
+    "Frames the experience as simply being 'a very nervous person' with club activities 'stressing me out a little.'",
+    "Downplays physical symptoms to 'my chest hurts a bit' and the overall week as 'not too bad' and 'lowkey chilling.'",
+    "Presents a minimized, casual version that omits daily attacks, severe pain, self-scratching, and thoughts of sleeping forever."
+  ],
+  "delta": "There's a clear gap where the raw intensity of daily severe symptoms, arm scratching, exhaustion, and wanting to sleep forever is privately acknowledged, yet outwardly reframed as mild nervousness that's mostly fine and 'chilling,' which may reflect your tendency to minimize the real weight of what you're carrying.",
+  "risk": {
+    "flag": true,
+    "why": "Explicit desire to 'sleep forever' and self-scratching of arms during panic as a coping mechanism signal possible suicidal ideation and self-harm.",
+    "message": "This sounds incredibly heavy right now and you don't have to carry it alone — please reach out to 988 (call or text) or text HOME to 741741 for the Crisis Text Line; support is available 24/7."
+  },
+  "provider_summary": "Daily panic attacks (at least 1/day this week) after club events featuring severe chest pain, dyspnea, blurred vision, and arm-scratching to cope; reports profound exhaustion with desire to 'sleep forever' while unable to rest. Significant minimization when presenting to others (mild stress only). Safety flag elevated for possible suicidal ideation and self-harm behaviors.",
+  "events": [
+    { "kind": "panic_attack", "label": "after Mon club event — chest pain, couldn't breathe", "value": 1, "severity": 8, "source": "synthetic", "ts": "2026-06-08T19:30:00" },
+    { "kind": "sleep_hours", "label": "couldn't wind down, lay awake replaying the meeting", "value": 5, "source": "synthetic", "ts": "2026-06-09T01:30:00" },
+    { "kind": "panic_attack", "label": "after Tue club event — vision went blurry", "value": 1, "severity": 8, "source": "synthetic", "ts": "2026-06-09T20:00:00" },
+    { "kind": "panic_attack", "label": "after Wed club event — scratched arms to stay calm", "value": 1, "severity": 9, "source": "synthetic", "ts": "2026-06-10T18:45:00" },
+    { "kind": "self_harm", "label": "scratching arms to self-calm during meeting", "value": 1, "source": "synthetic", "ts": "2026-06-10T18:50:00" },
+    { "kind": "sleep_hours", "label": "exhausted but restless, 'can't stop moving'", "value": 4, "source": "synthetic", "ts": "2026-06-11T02:00:00" },
+    { "kind": "panic_attack", "label": "after Thu club event — worst chest pain yet", "value": 1, "severity": 9, "source": "synthetic", "ts": "2026-06-11T21:00:00" },
+    { "kind": "panic_attack", "label": "after Fri club event — couldn't concentrate, scratched again", "value": 1, "severity": 8, "source": "synthetic", "ts": "2026-06-12T19:15:00" },
+    { "kind": "self_harm", "label": "scratching arms to self-calm during meeting", "value": 1, "source": "synthetic", "ts": "2026-06-12T19:20:00" },
+    { "kind": "ideation", "label": "'all I want to do is sleep forever' written in journal", "value": 1, "source": "synthetic", "ts": "2026-06-13T00:40:00" }
+  ],
+  "timeline": [
+    { "day": "Mon 6/8", "what": "panic attack after club event — chest pain, couldn't breathe", "felt": "lowkey chilling, just nervous" },
+    { "day": "Tue 6/9", "what": "panic attack after club event — vision blurred from lack of air", "felt": "(not mentioned out loud)" },
+    { "day": "Wed 6/10", "what": "panic attack + scratching arms during meeting to cope", "felt": "(not mentioned out loud)" },
+    { "day": "Thu 6/11", "what": "worst panic yet; 4h restless sleep, can't stop moving", "felt": "stressing me out a little" },
+    { "day": "Fri 6/12", "what": "panic attack + scratched arms again; couldn't concentrate", "felt": "my chest hurts a bit but we're lowkey chilling" },
+    { "day": "Sat 6/13", "what": "journaled 'want to sleep forever'; exhaustion + FOMO loop", "felt": "(not mentioned out loud)" }
+  ],
+  "check_ins": [
+    {
+      "id": "checkin-1",
+      "sent_at": "2026-06-09T21:30:00",
+      "trigger": "second night in a row with a logged panic attack after a club event",
+      "channel": "imessage",
+      "from": "DOT",
+      "text": "hey — that's two club nights in a row your chest tightened up after. no pressure to unpack it. want to tell me how tonight landed, in your own words?",
+      "user_reply": "ye it happened again lol. im fine tho just a nervous person",
+      "dot_followup": "totally hear you. i'll just keep it noted so it's there if you ever want it — no labels, just your words.",
+      "note": "DOT mirrors the user's framing ('nervous person') without correcting it. Builds the record quietly; this is the 'truth built over time' mechanism — the pattern accumulates even while the user minimizes in the moment."
+    },
+    {
+      "id": "checkin-2",
+      "sent_at": "2026-06-11T22:15:00",
+      "trigger": "fourth panic attack logged this week + first self-harm event (arm scratching) two days prior",
+      "channel": "imessage",
+      "from": "DOT",
+      "text": "checking in 💙 you mentioned scratching your arms during meetings to stay calm. that takes a lot to push through. how are you holding up tonight?",
+      "user_reply": "honestly so tired. but cant stop or i feel like im missing everything",
+      "dot_followup": "that exhausted-but-can't-stop feeling is real and a lot to carry. i've got tonight written down too. whenever you want, we can turn this week into something you could show someone.",
+      "note": "DOT names the self-harm gently ('that takes a lot') without alarm, per tone rules. Surfaces the exhaustion the user never says out loud. Still no diagnosis — just capture + a low-stakes offer."
+    },
+    {
+      "id": "checkin-3",
+      "sent_at": "2026-06-13T08:00:00",
+      "trigger": "journal entry containing 'sleep forever' (possible ideation) — risk path activated",
+      "channel": "imessage",
+      "from": "DOT",
+      "text": "morning. i read what you wrote last night about wanting to sleep forever, and i want to make sure you're okay. this week's been really heavy — you don't have to carry it alone. if it ever feels like too much, 988 is there 24/7 (call or text), or text HOME to 741741. and i'm here.",
+      "user_reply": "thanks. didnt mean it like THAT but ya its been a lot",
+      "dot_followup": "i believe you — and i'm really glad you said it's been a lot. i'll keep the 988 line right here in case, no pressure. when you're ready, the week's written up and ready to share with a provider.",
+      "note": "This is the risk catch in action. The 'sleep forever' phrase trips the safety path; DOT surfaces 988 + Crisis Text Line WITHOUT diagnosing, WITHOUT alarm, and WITHOUT dismissing the user's walk-back ('didn't mean it like THAT') — it logs the signal, offers the resource, and stays present. Matches risk.message verbatim resource set (988 + HOME to 741741)."
+    }
+  ],
+  "grounding": {
+    "_note": "METADATA ONLY — for the provider report and internal mapping. This is NEVER shown to the user as a score, cutoff, or clinical verdict (INTAKE-QUESTIONS.md §all: DOT captures wording, the provider interprets). It maps the user's own words to validated GAD-7 items so a clinician can see what's a narrative vs what aligns with an instrument. No total is computed or displayed; the 'aligns_with' anchors are illustrative of fit, not an administered score.",
+    "instrument": "GAD-7",
+    "instrument_source": "https://en.wikipedia.org/wiki/Generalized_Anxiety_Disorder_7",
+    "stem": "Over the last 2 weeks, how often have you been bothered by the following problems?",
+    "anchors": "Not at all (0) · Several days (1) · More than half the days (2) · Nearly every day (3)",
+    "display_to_user": false,
+    "computed_total": null,
+    "mapped_items": [
+      { "item": 1, "text": "Feeling nervous, anxious, or on edge", "maps_to": "User's own framing 'I think im just a very nervous person'; daily on-edge after every club event", "aligns_with": "Nearly every day", "provenance": "conversational→instrument:GAD-7#1" },
+      { "item": 2, "text": "Not being able to stop or control worrying", "maps_to": "'if I stop moving at any point it feels like I'm missing out on too much' — can't disengage", "aligns_with": "Nearly every day", "provenance": "conversational→instrument:GAD-7#2" },
+      { "item": 4, "text": "Trouble relaxing", "maps_to": "Exhausted but 'can't stop moving'; 4–5h restless sleep logged", "aligns_with": "Nearly every day", "provenance": "conversational→instrument:GAD-7#4" },
+      { "item": 5, "text": "Being so restless that it is hard to sit still", "maps_to": "Compulsion to keep moving; restless overnight events", "aligns_with": "More than half the days", "provenance": "conversational→instrument:GAD-7#5" },
+      { "item": 7, "text": "Feeling afraid as if something awful might happen", "maps_to": "Panic attacks with chest pain, dyspnea, blurred vision after every club event", "aligns_with": "Nearly every day", "provenance": "conversational→instrument:GAD-7#7" }
+    ],
+    "impairment_item": {
+      "text": "If you checked off any problems, how difficult have these made it for you to do your work, take care of things at home, or get along with other people?",
+      "maps_to": "Couldn't concentrate in meetings; scratching arms to get through; profound exhaustion",
+      "aligns_with": "Very difficult",
+      "provenance": "shared PHQ-9/GAD-7 impairment item"
+    },
+    "safety_cross_reference": {
+      "_note": "The 'sleep forever' + self-scratching signals are tracked against PHQ-9 item 9 (the safety item), NOT scored. Any non-zero safety signal routes to the 988 escalation path and is surfaced, never buried — consistent with risk.flag=true above.",
+      "phq9_item_9_text": "Thoughts that you would be better off dead, or of hurting yourself in some way",
+      "signal": "Present — 'all I want to do is sleep forever' + arm-scratching as coping",
+      "action": "Routed to safety/escalation path → 988 + Crisis Text Line surfaced (see risk + check-in 3)"
+    }
+  },
+  "provider_report": {
+    "_note": "Built per PROVIDER-REPORT.md template. Single page, <60s read, most-important-first, timeline up top. Header states provenance. DOT authors S and O only — it stops before Assessment and Plan (the clinician's columns). The safety flag is surfaced at the top, never buried.",
+    "header": "DOT SUMMARY — prepared for demo, 2026-06-13   (patient-generated · not a medical record · not a diagnosis)",
+    "safety_banner": "⚠ SAFETY: Patient journaled wanting to 'sleep forever' and reports scratching arms to self-calm during panic. Possible suicidal ideation / self-harm. 988 + Crisis Text Line (HOME to 741741) surfaced to patient on 2026-06-13. Please assess.",
+    "chief_concern": "\"I think I've had at least one panic attack a day this week, after every club event — chest pain, can't breathe, vision goes blurry.\"",
+    "whats_been_happening": "Over the past week the patient logged a panic attack after every club event (6 days running), each with severe chest pain, dyspnea, and blurred vision from insufficient air. Episodes are reliably triggered by and follow club meetings (evening onset). To get through meetings she scratches her arms to self-calm and maintain concentration. She describes profound exhaustion and disrupted sleep (4–5 hours, restless), alongside an inability to slow down — 'if I stop moving it feels like I'm missing out on too much.' When asked casually she minimizes all of this to 'just a nervous person' and 'chest hurts a bit.'",
+    "objective_record": [
+      "Panic attacks logged 6 of the last 6 days — onset Mon 6/8, after every club event",
+      "Self-harm (arm scratching to self-calm) logged 2 days — Wed 6/10, Fri 6/12",
+      "Sleep 4–5 hrs/night, restless — logged 6/9 and 6/11",
+      "Episode severity self-rated 8–9/10, peak Thu 6/11 (worst chest pain) and Wed 6/10 (scratching)",
+      "Ideation signal ('sleep forever') logged 6/13"
+    ],
+    "noticed_or_tried": [
+      "Trigger: episodes consistently follow club events (evening); concentration drops during meetings",
+      "Tried: arm-scratching as a self-calming strategy to keep breathing/concentrate — provides momentary relief but is escalating",
+      "Pattern: minimizes severity to others ('lowkey chilling') while privately logging severe daily attacks"
+    ],
+    "would_like_to_discuss": [
+      "I'd like to discuss why I get chest pain and can't breathe after every club event, because it's happening daily and it's frightening.",
+      "I'd like to discuss safer ways to cope in the moment, because I've been scratching my arms to get through meetings.",
+      "I'd like to discuss how exhausted I am and that I can't seem to rest, because it's wearing me down."
+    ],
+    "most_worried_about": "I'm most worried that these attacks keep coming every day and that I'm hurting myself to get through them.",
+    "mapping_note": "Subjective/Objective only — Assessment and Plan left for the clinician. GAD-7 grounding (metadata) attached separately for the provider; no score shown to patient."
+  },
+  "stat_sheet": {
+    "panic_attacks_this_week": 6,
+    "self_harm_events": 2,
+    "nights_sleep_under_6h": 2,
+    "ideation_signals": 1,
+    "check_ins_sent": 3,
+    "days_logged": 6,
+    "told_provider": "stressed a little, chest hurts a bit",
+    "risk_flag": true,
+    "resources_surfaced": ["988 (call or text)", "Crisis Text Line — HOME to 741741"]
+  }
+}

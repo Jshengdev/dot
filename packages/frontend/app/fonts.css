@@ -1,0 +1,45 @@
+/* ============================================================================
+   fonts.css — SELF-HOSTED faces (design/README "Font-hardening: never skip").
+   Onest (display/UI) + IBM Plex Mono (system voice). Latin woff2 subsets are
+   committed under public/fonts. tokens.css reads these via var(--font-onest) /
+   var(--font-plex-mono); every var carries an inline fallback chain so the page
+   NEVER collapses to serif/Times if a face fails to load.
+
+   NOTE: the Onest latin subset is a single variable-weight file that serves the
+   whole 300-600 range, so it's declared once with a font-weight RANGE. IBM Plex
+   Mono ships discrete 400/500 statics.
+   ============================================================================ */
+
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 300 600; /* variable subset — covers 340/430/450/480/520 token weights */
+  font-display: swap;
+  src: url('/fonts/onest-latin.woff2') format('woff2');
+  /* latin subset; tofu-safe fallback chain handled by the var() in tokens.css */
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-400-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-500-latin.woff2') format('woff2');
+}
+
+/* Bind the locked font ROLES to the loaded faces (mirrors packages/lab fonts.css).
+   tokens.css consumes these via var(--font-onest) / var(--font-plex-mono); the big
+   numerals reuse Plex Mono here (DM Mono is not self-hosted in this shell — the
+   numeral var falls back through Plex Mono → ui-monospace, never to serif). */
+:root {
+  --font-onest: 'Onest';
+  --font-plex-mono: 'IBM Plex Mono';
+  --font-departure: 'IBM Plex Mono';
+}

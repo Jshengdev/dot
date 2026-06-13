@@ -1,0 +1,47 @@
+{
+  "_note": "Sample story — PHYSICAL / diagnosis / advocacy case. Real split output from a live grok-4.20-0309-reasoning call (2026-06-13) on a staggered journal logged over 2 weeks. Demonstrates the STAGGERED-OVER-TIME mechanism + the ADVOCACY output (no crisis → a recommendation to get an X-ray, framed 'I'd like to get X checked because Y'). events[]/timeline[] are a synthetic seed for the UI.",
+  "id": "broken-toe",
+  "kind": "physical / diagnosis-advocacy",
+  "userId": "demo",
+  "createdAt": "2026-06-13",
+  "transcript": {
+    "entries": [
+      "Day 1: hurt my toe in soccer today, it's all blue and purple lol",
+      "Day 4: stopped being blue and purple but there's still a little bruise ring around the weird knuckle part",
+      "Day 6: toe still hurts a little, kind of like it's a little disconnected? can't rlly run or wear high heels",
+      "Week later: still hurts, it's not bruised anymore but it feels uncomfortable in my shoes now",
+      "2 weeks later: it still hurts... I just wear flip flops now"
+    ]
+  },
+  "feeling_validation": "It's completely valid that your soccer toe injury is still causing real pain and forcing changes in your shoes and activities after two weeks.",
+  "objective": [
+    "Day 1: toe injured during soccer with significant blue/purple bruising.",
+    "By day 4-6: bruising mostly resolved but persistent pain with 'disconnected' sensation; unable to run or wear high heels.",
+    "One week post-injury: pain continues without visible bruise, uncomfortable in shoes.",
+    "Two weeks post-injury: ongoing pain requiring switch to only flip-flops, indicating functional limitation persisting over 14 days."
+  ],
+  "subjective": [
+    "Casual language including 'lol', 'a little bruise ring', 'still hurts a little', 'kind of like it's a little disconnected'.",
+    "Minimizing persistent pain and activity changes by framing it as minor and simply adapting with flip flops rather than addressing the ongoing issue."
+  ],
+  "delta": "The objective pattern shows pain and mobility limits continuing for over two weeks after the initial bruise faded, yet the journal entries treat it casually as a small ongoing annoyance.",
+  "recommendation": {
+    "should_check": true,
+    "what": "an X-ray of my toe",
+    "why": "I'd like to get my toe checked with an X-ray because the pain has persisted for over two weeks with a disconnected feeling and has limited my ability to run or wear normal shoes."
+  },
+  "risk": { "flag": false, "why": "No indications of self-harm, suicidal thoughts, or danger.", "message": "" },
+  "provider_summary": "Patient injured toe playing soccer 2+ weeks ago with initial heavy bruising that resolved within days; however pain has continued with a 'disconnected' sensation, preventing running, high heels, or regular shoes (now limited to flip-flops only). Objective pattern shows no improvement in symptoms or function over 14+ days. Patient would like an X-ray of the toe to evaluate why pain is persisting.",
+  "events": [
+    { "kind": "injury", "label": "toe hurt in soccer, blue/purple", "value": 1, "source": "synthetic", "ts": "2026-05-30" },
+    { "kind": "pain", "label": "bruise faded, still hurts, can't run", "value": 1, "source": "synthetic", "ts": "2026-06-05" },
+    { "kind": "pain", "label": "uncomfortable in shoes", "value": 1, "source": "synthetic", "ts": "2026-06-06" },
+    { "kind": "pain", "label": "still hurts, only flip flops now", "value": 1, "source": "synthetic", "ts": "2026-06-13" }
+  ],
+  "timeline": [
+    { "day": "day 1", "what": "toe injured in soccer, heavy bruising", "felt": "lol" },
+    { "day": "day 4-6", "what": "bruise fading, pain + 'disconnected', can't run/heels", "felt": "still hurts a little" },
+    { "day": "week 1", "what": "pain persists, uncomfortable in shoes", "felt": "kind of annoying" },
+    { "day": "week 2", "what": "still hurts, switched to flip flops only", "felt": "just wear flip flops now" }
+  ]
+}

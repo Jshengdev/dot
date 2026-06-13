@@ -1,0 +1,36 @@
+{
+  "name": "@dot/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "DOT backend core — the objective mirror engine (Grok reasoning over a synthetic objective record).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "health": "tsx src/health.ts",
+    "test:store": "tsx src/test-store.ts",
+    "test:extract": "tsx src/test-extract.ts",
+    "test:turn": "tsx src/test-turn.ts",
+    "test:director": "tsx src/test-director.ts",
+    "serve": "tsx src/serve-director.ts",
+    "imessage": "tsx src/imessage/run.ts",
+    "voice:check": "tsx src/voice/test-voice.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/xai": "^2.0.0",
+    "@photon-ai/advanced-imessage-kit": "1.14.3",
+    "ai": "^5.0.0",
+    "inngest": "^4.5.1",
+    "ws": "^8.19.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@inngest/test": "^1.0.0",
+    "@types/node": "^25.9.3",
+    "@types/ws": "^8.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

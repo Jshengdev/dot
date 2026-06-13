@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DOT — backend process flow</title>
+<style>
+  :root{
+    --page:#ffffff; --ink:#0b1620; --ink-60:rgba(11,22,32,.60); --ink-40:rgba(11,22,32,.40);
+    --ink-12:rgba(11,22,32,.12); --blue:#007AFF; --blue-08:rgba(0,122,255,.08); --blue-16:rgba(0,122,255,.16);
+    --warm:#c44569; --lemon:#f5a142;
+    --r:14px; --elev:0 1px 2px rgba(11,22,32,.06), 0 8px 24px rgba(11,22,32,.05);
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Onest",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);
+    line-height:1.5;-webkit-font-smoothing:antialiased;padding:48px 28px 80px}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-weight:600;letter-spacing:-.02em;font-size:30px;margin:0 0 4px}
+  .sub{color:var(--ink-60);font-size:15px;margin:0 0 6px}
+  .breath{color:var(--blue);font-size:15px;margin:0 0 36px;font-weight:500}
+  .lab{font-family:var(--mono);font-size:11px;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-40)}
+  .flow{display:flex;flex-direction:column;gap:0;align-items:center}
+  .node{width:100%;max-width:760px;background:#fff;border-radius:var(--r);box-shadow:var(--elev);
+    padding:18px 22px;position:relative}
+  .node .lab{margin-bottom:6px}
+  .node h3{margin:0 0 4px;font-size:18px;font-weight:550;letter-spacing:-.01em}
+  .node p{margin:0;color:var(--ink-60);font-size:14px}
+  .tags{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .tag{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:999px;background:var(--blue-08);color:var(--blue)}
+  .tag.warm{background:rgba(196,69,105,.10);color:var(--warm)}
+  .tag.store{background:rgba(11,22,32,.05);color:var(--ink-60)}
+  .moment{box-shadow:0 0 0 2px var(--blue-16), var(--elev)}
+  .moment h3:after{content:" ← the moment";color:var(--blue);font-size:13px;font-weight:500}
+  .arrow{width:2px;height:26px;background:linear-gradient(var(--ink-12),var(--ink-12));margin:0 auto;position:relative}
+  .arrow:after{content:"";position:absolute;left:-3px;bottom:0;width:8px;height:8px;border-right:2px solid var(--ink-12);
+    border-bottom:2px solid var(--ink-12);transform:rotate(45deg)}
+  .loop{font-family:var(--mono);font-size:11px;color:var(--blue);text-align:center;margin:2px 0;opacity:.8}
+  .band{width:100%;max-width:760px;border-radius:var(--r);padding:14px 18px;margin:2px 0;background:var(--blue-08)}
+  .band .lab{color:var(--blue);margin-bottom:6px}
+  .band .row{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:12px;background:#fff;border-radius:10px;padding:7px 11px;box-shadow:var(--elev);color:var(--ink)}
+  .chip b{color:var(--blue);font-weight:600}
+  .twoeyes{max-width:760px;width:100%;margin-top:34px;background:#fff;border-radius:var(--r);box-shadow:var(--elev);padding:18px 22px}
+  .twoeyes h3{margin:0 0 8px;font-size:16px;font-weight:550}
+  .twoeyes ul{margin:0;padding-left:18px;color:var(--ink-60);font-size:14px}
+  .contract{max-width:760px;width:100%;margin-top:18px;font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:rgba(11,22,32,.03);border-radius:var(--r);padding:16px 18px;white-space:pre-wrap;overflow:auto}
+  .foot{max-width:760px;margin:30px auto 0;color:var(--ink-40);font-size:12px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DOT — backend process flow</h1>
+  <p class="sub">Tell it how you feel → objective + subjective truths, pieced together → a story a provider can understand. Modular: every input is a connector; every condition reuses the same engine.</p>
+  <p class="breath">"DOT helps you tell it how you feel — a story your provider can finally understand."</p>
+
+  <div class="flow">
+
+    <div class="band">
+      <div class="lab">① Connectors — modular inputs (one interface)</div>
+      <div class="row">
+        <span class="chip"><b>Grok Voice</b> · realtime intro</span>
+        <span class="chip"><b>iMessage</b> · ongoing thread</span>
+        <span class="chip">SyntheticConnector <span style="color:var(--ink-40)">(demo)</span></span>
+        <span class="chip" style="color:var(--ink-40)">+ Calendar / Health <span>(future)</span></span>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <div class="lab">② Conversation engine — the turn loop</div>
+      <h3>Intro + onboarding</h3>
+      <p>inbound → assemble ≤2 context layers (this story + relevant events) → <b>one</b> Grok call → reply. Adapts the validated questions per condition (anxiety · depression · pain/sickness · chronic).</p>
+      <div class="tags"><span class="tag">grok-4.20-reasoning</span><span class="tag">Vercel AI SDK</span></div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <div class="lab">③ Director — durable routing (Inngest)</div>
+      <h3>extract → classify → reflect → refine → finalize</h3>
+      <p>each step is a durable, retryable node; pauses on a <b>human-on-risk</b> branch (<code>waitForEvent</code>) and resumes. The run timeline is the on-screen proof of autonomy.</p>
+      <div class="tags"><span class="tag">Inngest</span><span class="tag warm">human-on-risk</span></div>
+    </div>
+    <div class="loop">⟲ one refine loop (you react / add → it sharpens)</div>
+    <div class="arrow"></div>
+
+    <div class="node moment">
+      <div class="lab">④ Reflect — connect the dots</div>
+      <h3>objective vs. subjective</h3>
+      <p>split what objectively happened from the story the mind added; surface the <b>delta</b> as observations the person weighs — validate first, facts not a verdict, never "you're overreacting."</p>
+      <div class="tags"><span class="tag">grok-4.20-reasoning</span><span class="tag">grok-imagine-image · glass dot</span></div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="band">
+      <div class="lab">⑤ Memory / store — reflect against history</div>
+      <div class="row">
+        <span class="chip">users</span><span class="chip">messages</span>
+        <span class="chip"><b>stories</b> {subjective, objective, delta}</span>
+        <span class="chip">events {kind, source, ts}</span>
+        <span class="chip">stat_sheet <span style="color:var(--ink-40)">(view)</span></span>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node">
+      <div class="lab">⑥ Output — you draft your own</div>
+      <h3>a story a provider can understand</h3>
+      <p>glass dots (the moments) + a clean <b>pre-visit report</b>: timeline, objective vs. felt, recommendations and the <i>why</i>. Not a diagnosis.</p>
+      <div class="tags"><span class="tag">Vercel</span><span class="tag store">provider-syncable</span></div>
+    </div>
+
+  </div>
+
+  <div class="twoeyes">
+    <h3>👁️👁️ Two-eyes watcher (rides the build)</h3>
+    <ul>
+      <li><b>Steering / overcomplication</b> — is this on the one line? subtract, satisfice, WIP=1.</li>
+      <li><b>Refactor for optimal</b> — cleaner, simpler, one clear purpose per primitive.</li>
+      <li><b>Test quality</b> — not tunnel-visioned; each test verifiable <i>live</i> (run command + observed output).</li>
+    </ul>
+  </div>
+
+  <div class="contract">// the data contract (build to this exactly)
+Story  = { id, userId, transcript, subjective: string[], objective: string[], delta: string, timeline, createdAt }
+Event  = { id, userId, kind, label, value, source: 'story' | 'synthetic', ts }
+Report = { stories: Story[], objective: string[], subjective: string[], recommendations: {what, why}[] }
+Connector = { name, start(onMessage), send(reply) }      // modular input seam</div>
+
+  <p class="foot">DOT · backend process flow · synthetic data only · demo hero = anxiety · the engine is one, the entries are four.</p>
+</div>
+</body>
+</html>

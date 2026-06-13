@@ -23,4 +23,9 @@
 
 > Format: `- [OPEN|RESOLVED] <thing> — <context / what's needed> — <who/when resolved>`
 
-- _(none yet — add as the build surfaces collisions)_
+**Build findings (L0–L4, 2026-06-13):**
+- [OPEN → carry to L5] **Multi-turn memory not wired into the call.** `turn.ts` assembles a ≤2-layer ContextPacket (history + recentStories + evidence) but does NOT feed history/recentStories into the reasoning call — `extract.ts` re-derives grounding from `events` only. Fine for the single-turn demo; MUST wire before L5 (continuous iMessage conversation = the "remembered relationship", DIGEST §4.2). Also dedupe the evidence read (derived twice/turn: turn.ts + extract.ts).
+- [OPEN → TONE/SAFETY, needs Johnny] **Crisis branch post-clearance content.** The human-on-risk PAUSE works (durable WaitForSignal). But after clearance, the director currently produces a normal counter-evidence reflection on a self-harm transcript ("everyone would be better off without me" → "…the record shows friends reached out…"). Counter-evidencing active suicidal ideation may be wrong; doctrine routes crisis → human, not reframe. Decide: crisis → help-routing message only (no counter-evidence delta), vs. normal reflection once a human clears.
+- [OPEN, non-blocking] **`refine` step is a provable no-op** (director.ts self-assign). Keep the seam (SCOPE-LOCK journey step 5) but make it an explicit pass-through or a real wider-window re-query, not a retry that can't retry.
+- [RESOLVED] **`waitForSignal` instead of `waitForEvent`** (L4). `@inngest/test@1.0.0` + `inngest@4.5.1` makes a mocked `waitForEvent` resume un-CLI-verifiable; `waitForSignal` carries the same `dot/human.cleared` semantics with per-run targeting (arguably more correct). Note for demo Q&A.
+- [RESOLVED] **Mission is effectively locked** in `docs/reference/DOT-RESEARCH-DIGEST.md` (objective-mirror); the build is proceeding on it. The `⏳ MISSION TODO` placeholders above predate the digest.

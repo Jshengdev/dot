@@ -1,0 +1,32 @@
+{
+  "_note": "Sample story — WOMEN'S HEALTH / STIGMA / advocacy-knowledge case. Real split output from a live grok-4.20-0309-reasoning call (2026-06-13). Demonstrates DOT on a STIGMATIZED topic + the advocacy-knowledge gap ('I could only advocate for an IUD because my mom told me about it; most people don't have that person'). The key value: DOT democratizes the insider knowledge of what to ask for, stigma-free, with an organized record.",
+  "id": "womens-health",
+  "kind": "women's health / stigma / advocacy",
+  "userId": "demo",
+  "createdAt": "2026-06-13",
+  "transcript": {
+    "journal": "I had horrible horrible period cramps, and there's a lot of stigma in talking about it. I never really talked about it with a healthcare provider before because it's always been 'oh that's natural' or 'just take painkillers.' And even more with birth control there's lots of stigma, and it's embarrassing to say 'oh yeah I'm having sex.' Now that I have an IUD my period cramps have gone away, and I can have safe sex without worrying about condoms or birth control pills which were messing with my hormones a lot, which is also something not typically talked about. Birth control pills can mess people up because it messes with hormones, and it definitely messed with mine. Now that I have an IUD life is so much better. If I had a way to log the hormonal changes and impacts on my life without worry of stigma, even just being able to organize it all, it would help someone advocate for themselves a lot better. I could only advocate for an IUD because my mom told me about it, and a lot of people don't have that kind of person in their life."
+  },
+  "feeling_validation": "It's valid and real that those severe period cramps were debilitating and that switching to an IUD brought genuine relief while avoiding the hormonal disruptions from the pill.",
+  "objective": [
+    "Severe period cramps that resolved after IUD placement",
+    "Oral contraceptive pills caused significant hormonal side effects that impacted daily life",
+    "IUD enabled effective contraception without daily pills or reliance on condoms",
+    "Quality of life substantially improved after transitioning from pills to IUD"
+  ],
+  "subjective": [
+    "Period pain framed as 'natural' or easily fixed with painkillers, which silenced discussion with providers",
+    "Embarrassment and stigma around admitting to sexual activity prevented open birth-control conversations",
+    "Hormonal impacts of pills viewed as something 'not typically talked about,' reinforcing isolation",
+    "Reliance on mother's personal knowledge to learn about and advocate for IUD because such information wasn't otherwise accessible"
+  ],
+  "delta": "The 'it's natural' framing and embarrassment about sexual health created a silence that kept you from raising these issues with providers earlier, so the switch to an effective IUD only happened once family guidance appeared.",
+  "recommendation": {
+    "should_check": true,
+    "what": "menstrual symptoms, hormonal changes, and their daily impacts",
+    "why": "I'd like to track menstrual symptoms, hormonal changes, and their daily impacts because it organizes concrete information I can share with a provider to advocate for options that work for my body"
+  },
+  "risk": { "flag": false, "why": "No mention of self-harm, suicidal thoughts, or immediate safety concerns", "message": "" },
+  "provider_summary": "Patient had severe period cramps dismissed as normal and treated with painkillers; oral contraceptive pills produced bothersome hormonal side effects. Symptoms and quality of life markedly improved after IUD placement. Stigma and normalization of menstrual pain plus embarrassment discussing sexual activity delayed care-seeking until family-shared information prompted advocacy for the IUD; patient sees value in structured symptom logging to support future discussions.",
+  "advocacy_insight": "You can only advocate for what you know to ask for. She got the IUD because her mom told her — most people don't have that person. DOT is that person for everyone: the objective record + the knowledge of what to bring up, stigma-free."
+}

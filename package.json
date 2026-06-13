@@ -1,0 +1,12 @@
+{
+  "name": "dot",
+  "version": "0.0.0",
+  "private": true,
+  "description": "DOT — tell it how you feel; the objective mirror (clean-blue). Monorepo root.",
+  "scripts": {
+    "dev": "pnpm --filter @dot/frontend dev",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "health": "pnpm --filter @dot/backend health"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

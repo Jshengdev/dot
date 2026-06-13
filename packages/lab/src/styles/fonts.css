@@ -1,0 +1,10 @@
+/* Bind the locked font ROLES to the loaded faces. tokens.css reads these via
+   var(--font-onest) / var(--font-plex-mono) / var(--font-departure). Onest + IBM
+   Plex Mono are the frozen system; DM Mono drives the big numerals (Johnny's pick). */
+:root {
+  --font-onest: 'Onest';
+  --font-plex-mono: 'IBM Plex Mono';
+  --font-departure: 'DM Mono';
+  /* the one signature ease, surfaced for keyframes that want it inline */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}

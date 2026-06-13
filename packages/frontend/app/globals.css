@@ -1,0 +1,241 @@
+/* ============================================================================
+   globals.css — DOT frontend bedrock.
+   Single source of truth for tokens is design/tokens.css (imported, never copied,
+   so there is zero drift). fonts.css binds the self-hosted Onest + IBM Plex Mono
+   faces to the --font-* roles. The whole app is wrapped in `brand-clean-blue`
+   (app/layout.tsx) so the room is white and the one accent is trust-blue.
+   ============================================================================ */
+@import "../../../design/tokens.css";
+@import "./fonts.css";
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--page);
+  color: var(--ink-90);
+  font-family: var(--font-sans);
+  font-weight: var(--wt-body); /* 430 — never 400 */
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ----------------------------------------------------------------------------
+   L0 hero — a calm white room, one breathing blue dot, wordmark + tagline.
+   Placeholder until the conversation surface lands (L6); already in the locked
+   clean-blue language so L0 boots in-brand from the first pixel.
+   ---------------------------------------------------------------------------- */
+.dot-hero {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+}
+.dot-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue);
+  animation: dot-breathe 4.2s var(--ease-signature) infinite;
+}
+/* live things breathe, never bounce (design/02-MOTION) */
+@keyframes dot-breathe {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.20); }
+  50%      { transform: scale(1.14); box-shadow: 0 0 0 30px rgba(0, 122, 255, 0); }
+}
+.dot-word {
+  margin: 0;
+  font-size: 40px;
+  font-weight: var(--wt-medium); /* 450 */
+  letter-spacing: -0.02em;
+}
+.dot-tag {
+  margin: 0;
+  font-family: var(--font-mono); /* mono = system voice */
+  font-size: 13px;
+  text-transform: lowercase;
+  color: var(--ink-50);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-mark { animation: none; }
+}
+
+/* ============================================================================
+   L6 — THE CONVERSATION SURFACE (the reflection output).
+   The thread is the product (design/05-NEW-BRAND §9). White room, one cool ink,
+   one trust-blue, no borders (depth from light), nothing bounces. Every bubble is
+   the right shape; data arrives as rich bubbles, never a paragraph.
+   ============================================================================ */
+
+.surface {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 120px;
+}
+
+/* the head — a quiet brand line + the real/cached/mocked mode badge (rule 3) */
+.surface-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 4px 14px;
+  background: linear-gradient(var(--page) 70%, transparent);
+}
+.surface-title { font-size: 17px; font-weight: var(--wt-medium); letter-spacing: -0.01em; }
+.surface-sub { font-family: var(--font-mono); font-size: 11px; color: var(--ink-35); text-transform: lowercase; }
+.mode-badge {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: lowercase;
+  padding: 4px 9px;
+  border-radius: var(--r-pill);
+  letter-spacing: 0.01em;
+}
+.mode-running { color: var(--run-text); background: var(--run-bg); }
+.mode-done    { color: var(--good-text); background: var(--good-bg); }
+.mode-failed  { color: var(--bad-text); background: var(--bad-bg); }
+.mode-idle    { color: var(--ink-35); background: var(--recessed); }
+
+/* the thread column — capped at a readable width (65–72 chars/line) */
+.thread {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ---- the bubble system (design/05-NEW-BRAND §2) -------------------------- */
+.bubble {
+  position: relative;
+  max-width: 320px;
+  padding: 10px 16px;
+  border-radius: var(--r-bubble);
+  font-size: 16px;
+  line-height: 22px;
+  word-wrap: break-word;
+  margin-bottom: 2px;
+}
+.bubble.is-last { margin-bottom: 14px; }
+/* AI / brand / "sent" — TRUST BLUE, right-aligned (DOT speaks here) */
+.bubble--ai   { align-self: flex-end;   background: var(--blue);     color: #fff; }
+/* User / "received" — cool grey, left-aligned (the human) */
+.bubble--user { align-self: flex-start; background: var(--recessed); color: var(--ink-90); }
+
+/* the tail — only the last bubble in a group gets one (the iMessage read) */
+.bubble.is-last::before, .bubble.is-last::after { position: absolute; bottom: 0; height: 25px; content: ''; }
+.bubble--ai.is-last::before  { right: -8px;  width: 20px; background: var(--blue); border-bottom-left-radius: 16px 14px; }
+.bubble--ai.is-last::after   { right: -26px; width: 26px; background: var(--page); border-bottom-left-radius: 10px; }
+.bubble--user.is-last::before{ left: -8px;   width: 20px; background: var(--recessed); border-bottom-right-radius: 16px 14px; }
+.bubble--user.is-last::after { left: -26px;  width: 26px; background: var(--page);     border-bottom-right-radius: 10px; }
+
+/* ---- blur-up reveal (design/02-MOTION — content develops, never hard-cuts) */
+.reveal { opacity: 0; filter: blur(7px); transform: translateY(8px); transition: opacity var(--dur-fast) var(--ease-signature), filter var(--dur-fast) var(--ease-signature), transform var(--dur-fast) var(--ease-signature); }
+.reveal.in { opacity: 1; filter: blur(0); transform: translateY(0); }
+
+/* ---- stat bubble — one number, count-up once (design/05 §3) -------------- */
+.stat-strip { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin: 4px 0 14px; }
+.stat-bubble {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  padding: 12px 18px; min-width: 0;
+}
+.stat-num { font-family: var(--font-numeral); font-weight: var(--wt-num); font-size: 40px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat-unit { font-size: 18px; margin-left: 2px; opacity: 0.85; }
+.stat-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: lowercase; opacity: 0.85; }
+
+/* ---- chip row — felt claims vs facts (subjective / objective) ------------ */
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 14px; }
+.chip-row--felt { justify-content: flex-end; }
+.chip-row--fact { justify-content: flex-end; }
+.chip {
+  font-size: 13.5px; padding: 6px 12px; border-radius: var(--r-pill);
+  opacity: 0; filter: blur(5px);
+  transition: opacity var(--dur-fast) var(--ease-signature), filter var(--dur-fast) var(--ease-signature);
+}
+.reveal.in .chip { opacity: 1; filter: blur(0); }
+/* felt = the anxious lens (quiet, ink) · fact = grounded (blue-tint, owned) */
+.chip--felt { background: var(--recessed); color: var(--ink-70); }
+.chip--fact { background: var(--blue-tint); color: var(--blue-ink); }
+
+/* ---- card-in-bubble ------------------------------------------------------ */
+.card-bubble { background: transparent !important; padding: 0; max-width: 360px; }
+.card-inner { background: var(--raised); border-radius: var(--r-card); padding: 14px 16px; }
+.card-inner--accent { background: var(--blue-tint); }
+.card-title { font-weight: var(--wt-medium); font-size: 14px; color: var(--ink-90); margin-bottom: 8px; }
+.card-rows { display: flex; flex-direction: column; gap: 5px; }
+.card-row { display: flex; justify-content: space-between; gap: 12px; }
+.card-k { font-family: var(--font-mono); font-size: 11px; color: var(--ink-35); }
+.card-v { font-family: var(--font-mono); font-size: 11px; color: var(--ink-70); }
+
+/* ---- the DELTA bubble — the catch (the demo moment, the loudest) --------- */
+.delta-bubble {
+  align-self: stretch; max-width: 680px; margin: 6px 0 22px;
+  font-size: 19px; line-height: 27px; font-weight: var(--wt-medium);
+  padding: 18px 22px;
+}
+.delta-bubble::before, .delta-bubble::after { display: none; }
+.delta-foot { margin-top: 12px; font-family: var(--font-mono); font-size: 12px; font-weight: var(--wt-body); opacity: 0.82; text-transform: lowercase; }
+
+/* ---- the glass stage — the hero floats off the page (ring-showcase) ------ */
+.glass-stage {
+  align-self: stretch; max-width: 680px; margin: 8px 0 18px;
+  border-radius: var(--r-frame); overflow: hidden; background: #eef2f6;
+  text-align: center;
+}
+.glass-host { width: 100%; height: 380px; display: block; }
+.glass-host canvas { display: block; }
+.glass-fallback { width: 100%; height: 100%; background: radial-gradient(circle at 50% 45%, #ffffff, #e7edf3 70%); display: grid; place-items: center; }
+/* if WebGL is unavailable, the hero degrades to a calm breathing blue dot (still
+   in-brand) so the grounded content below is never taken down by a GPU failure */
+.glass-fallback--breathe::after {
+  content: ''; width: 64px; height: 64px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #5ea8ff, var(--blue) 70%);
+  box-shadow: 0 12px 40px -8px rgba(0, 122, 255, 0.5), inset 0 0 0 1px rgba(255,255,255,0.5);
+  animation: dot-breathe 4.2s var(--ease-signature) infinite;
+}
+.glass-caption {
+  position: relative; z-index: 2; margin-top: -30px; padding-bottom: 14px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink-35); text-transform: lowercase;
+}
+
+/* ---- the provider report — SOAP S/O only (the pre-visit sheet) ----------- */
+.report { align-self: stretch; max-width: 680px; margin: 14px 0 0; }
+.report-sheet { background: var(--raised); border-radius: var(--r-panel); padding: 26px 28px; }
+.report-header { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--blue-ink); }
+.report-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-35); margin: 4px 0 20px; }
+.report-section { margin-bottom: 18px; }
+.report-h { margin: 0 0 8px; font-size: 14px; font-weight: var(--wt-emph); color: var(--ink-90); }
+.report-h-sub { font-weight: var(--wt-body); font-size: 12px; color: var(--ink-35); }
+.report-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.report-list li { font-size: 14.5px; line-height: 21px; color: var(--ink-70); }
+.report-list--mono li { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-90); }
+.report-foot { margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--ink-10); font-size: 13px; color: var(--ink-50); line-height: 19px; }
+
+/* ---- fail LOUD (no silent stub — a visible FAILED badge) ----------------- */
+.fail-badge {
+  align-self: stretch; max-width: 680px; margin: 14px 0;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 14px 16px; border-radius: var(--r-card);
+  background: var(--bad-bg); color: var(--bad-text);
+  font-family: var(--font-mono); font-size: 12.5px;
+  box-shadow: 0 0 0 1px var(--bad);
+}
+.fail-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); }
+.retry-key {
+  margin-left: auto; font-family: var(--font-mono); font-size: 12px; cursor: pointer;
+  background: var(--page); color: var(--ink-90); border: none; padding: 6px 12px; border-radius: var(--r-key);
+  box-shadow: inset 0 0 0 1px var(--ink-10);
+}
+.retry-key:active { transform: translateY(1px); }

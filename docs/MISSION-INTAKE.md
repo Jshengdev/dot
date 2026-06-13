@@ -1,5 +1,8 @@
 # MISSION-INTAKE.md — drop the core mission here to unlock the build
 
+> ✅ **LOCKED 2026-06-13.** The six answers are crystallized + propagated into `docs/SCOPE-LOCK.md` (the build gate
+> reads that one). DOT = the story-based "objective mirror" for anxiety. To change scope, edit `SCOPE-LOCK.md`.
+
 > **Johnny:** this is the ONE place you write down what DOT actually does. The repo's structure, design
 > system, and build engine are already set up and waiting. The product idea is the only missing piece — fill
 > the six blanks below and DOT goes from "scaffolded" to "ready to build." Keep each answer tight; crystal

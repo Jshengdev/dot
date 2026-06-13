@@ -1,0 +1,132 @@
+/* ============================================================================
+   globals.css — DOT flow-proto bedrock.
+   Frozen tokens imported from design/tokens.css (single source of truth, no drift).
+   Tailwind layers on top for layout/motion utilities. The app is wrapped in
+   `brand-clean-blue` (layout.tsx) so the room is white + the accent is trust-blue.
+   ============================================================================ */
+@import "../../../design/tokens.css";
+@import "./fonts.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { --ease: cubic-bezier(0.16, 1, 0.3, 1); }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--page);
+  color: var(--ink-90);
+  font-family: var(--font-sans);
+  font-weight: 430;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* hide scrollbars on scroll surfaces, keep scrollability */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Component classes live OUTSIDE @layer so Tailwind never tree-shakes them — the
+   bubble--ai/user names are built dynamically and would be purged inside @layer. */
+/* the primary pill key — one per view (design: buttons are keys, 1px press) */
+  .pill {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3
+           font-mono text-[13px] lowercase tracking-wide cursor-pointer select-none
+           transition-[transform,background-color] duration-150;
+    background: var(--blue);
+    color: #fff;
+  }
+  .pill:active { transform: translateY(1px); background: var(--blue-press); }
+  .pill--ghost { background: var(--recessed); color: var(--ink-70); }
+  .pill--ghost:active { background: var(--blue-tint); }
+
+  /* the two-bubble identity (design/05-NEW-BRAND §2) */
+  .bubble {
+    @apply relative max-w-[260px] rounded-[20px] px-4 py-2.5 text-[16px] leading-[22px];
+    font-weight: 430;
+    word-wrap: break-word;
+  }
+  .bubble--ai { align-self: flex-end; background: var(--blue); color: #fff; }
+  .bubble--user { align-self: flex-start; background: var(--recessed); color: var(--ink-90); }
+
+/* typing indicator — presence (the one allowed ≤3px hop) */
+.typing { display: inline-flex; gap: 4px; padding: 14px 16px; background: var(--recessed); border-radius: 20px; align-self: flex-start; }
+.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-35); animation: typing-dot 1.4s infinite both; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-dot { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+/* the small CSS dot mark (avatar in data phases, header) */
+.dot-mark { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 4px var(--blue-tint); }
+.dot-mark--breathe { animation: dot-breathe 4.2s var(--ease) infinite; }
+@keyframes dot-breathe {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.20); }
+  50%      { transform: scale(1.12); box-shadow: 0 0 0 22px rgba(0, 122, 255, 0); }
+}
+
+/* knowledge-graph node chips */
+.gnode {
+  position: absolute; transform: translate(-50%, -50%);
+  padding: 7px 12px; border-radius: 12px; background: var(--raised);
+  font-size: 12px; line-height: 1.3; max-width: 168px; text-align: center;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 0 0 1px rgba(11,22,32,.06), 0 2px 8px rgba(11,22,32,.06);
+  color: var(--ink-70);
+}
+.gnode--fact { color: var(--blue-ink); }
+.gnode--yap { background: var(--blue); color: #fff; font-weight: 450; padding: 12px 18px; }
+
+/* ── connect-the-dots — a SOFT radial knowledge graph (the traditional vibe) ──
+   Dreamy blurred-light room (Johnny's water photo heavily blurred + whitened), soft
+   neumorphic pill cards around a restored small 3D glass orb at the centre. */
+.ugraph { position: fixed; inset: 0; overflow: hidden; color: #3c4a60; }
+.ugraph-bg {
+  position: absolute; inset: -60px; pointer-events: none;
+  background: url('/water-bg.png') center/cover no-repeat;
+  filter: blur(70px) brightness(1.22) saturate(0.75);
+  transform: scale(1.1);
+}
+.ugraph-veil { position: absolute; inset: 0; pointer-events: none; background: rgba(244, 247, 250, 0.62); }
+
+.ugraph-logo { position: absolute; top: 24px; left: 28px; display: flex; align-items: center; gap: 8px; z-index: 10; }
+.ugraph-logo .m { width: 11px; height: 11px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 3px var(--blue-tint); }
+.ugraph-logo .n { font-size: 15px; font-weight: 500; color: var(--blue); letter-spacing: -0.01em; }
+
+/* the soft pill cards */
+.upill {
+  position: absolute; transform: translate(-50%, -50%);
+  max-width: 190px; padding: 13px 21px; border-radius: 24px;
+  background: #ffffff; color: #3c4a60;
+  font-size: 16px; line-height: 1.28; text-align: center; font-weight: 430;
+  box-shadow: 0 1px 2px rgba(96,116,150,0.10), 0 12px 30px rgba(96,116,150,0.16), inset 0 1px 0 rgba(255,255,255,0.9);
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), opacity 0.5s var(--ease);
+  cursor: default; z-index: 4;
+}
+.upill:hover { box-shadow: 0 1px 2px rgba(96,116,150,0.12), 0 16px 40px rgba(96,116,150,0.22), inset 0 1px 0 rgba(255,255,255,0.9); }
+.upill .ud { display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 10px; text-transform: lowercase; color: #9aa7bd; }
+.upill--fact.is-free .ud::after { content: ' · → provider'; color: var(--blue); }
+.upill--dim { opacity: 0.92; }
+
+/* connecting lines (SVG) sit under the pills, over the bg */
+.ugraph-lines { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+
+/* the blue → / proceed key, soft */
+.ukey {
+  position: absolute; left: 50%; bottom: 56px; transform: translateX(-50%);
+  width: 58px; height: 58px; border-radius: 50%; z-index: 10;
+  background: var(--blue); color: #fff; display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0,122,255,0.32), inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: transform 0.15s var(--ease), background 0.15s var(--ease);
+}
+.ukey:active { transform: translateX(-50%) translateY(1px); background: var(--blue-press); }
+
+/* a popped-off fact, floating free (the objective truth set apart) */
+@keyframes pill-float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-7px) rotate(var(--r, 0deg)); } }
+.upill-bob { animation: pill-float 4.5s var(--ease) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

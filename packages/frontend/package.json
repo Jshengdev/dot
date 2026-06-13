@@ -1,0 +1,31 @@
+{
+  "name": "@dot/frontend",
+  "version": "0.0.0",
+  "private": true,
+  "description": "DOT conversation surface — the clean-blue thread + the glass-dot reflection. Runs the real Grok reflection from @dot/backend; the glass dot is the hero (R3F liquid-glass, ported from packages/lab).",
+  "scripts": {
+    "dev": "next dev -p 5170",
+    "build": "next build",
+    "start": "next start -p 5170",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dot/backend": "workspace:*",
+    "@react-three/drei": "9.122.0",
+    "@react-three/fiber": "8.18.0",
+    "@react-three/postprocessing": "2.19.1",
+    "next": "14.2.5",
+    "postprocessing": "6.39.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "0.160.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@types/three": "^0.160.0",
+    "typescript": "5.5.3"
+  }
+}
