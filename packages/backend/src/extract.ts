@@ -99,32 +99,51 @@ const REFLECT_WINDOW_DAYS = 7;
 /**
  * Build the RECORD FACTS block injected into the user message. `now` is injected
  * so grounding is deterministic against the seeded week (SEED_NOW).
+ *
+ * Grounded on the ANXIETY-HERO record (seed.ts / sample-story.json): the logged
+ * behavioral events the minimized story is most likely to contradict — daily panic
+ * attacks, the arm-scratching, the short restless nights, the ideation signal. The
+ * model is told to use THESE real counts and never invent its own. (When DOT-
+ * extracted `story_fact` rows accumulate over turns, they're surfaced too, so the
+ * follow-up turns ground on the growing record.)
  */
 function buildRecordFacts(userId: string, now: string): string {
-  const received = store.countEvents(
+  const panic = store.countEvents(
     userId,
-    { kind: 'message_received', sinceDays: REFLECT_WINDOW_DAYS },
+    { kind: 'panic_attack', sinceDays: REFLECT_WINDOW_DAYS },
     now,
   );
-  const initiated = store.getEvents(userId, { kind: 'conversation_initiated' });
-  const byFriend = initiated.filter((e) => e.value === 'friend').length;
-  const byYou = initiated.filter((e) => e.value === 'you').length;
-  const calls = store.countEvents(userId, { kind: 'call', sinceDays: REFLECT_WINDOW_DAYS }, now);
-  const inPerson = store.getEvents(userId, { kind: 'in_person' });
-  const symptoms = store.getEvents(userId, { kind: 'physical_symptom' });
-  const coworker = store.getEvents(userId, { kind: 'coworker_thanks' });
+  const selfHarm = store.countEvents(
+    userId,
+    { kind: 'self_harm', sinceDays: REFLECT_WINDOW_DAYS },
+    now,
+  );
+  const ideation = store.countEvents(
+    userId,
+    { kind: 'ideation', sinceDays: REFLECT_WINDOW_DAYS },
+    now,
+  );
+  // Sleep rows carry the hours slept in `value`; count the nights under 6h.
+  const sinceTs = new Date(Date.parse(now) - REFLECT_WINDOW_DAYS * 86_400_000).toISOString();
+  const sleep = store.getEvents(userId, { kind: 'sleep_hours', sinceTs });
+  const nightsUnder6 = sleep.filter((e) => typeof e.value === 'number' && e.value < 6).length;
+  const sleepHrs = sleep.map((e) => `${e.value}h`).join(', ');
 
   const lines: string[] = [
     `In the last ${REFLECT_WINDOW_DAYS} days, the logged behavioral record shows:`,
-    `- ${received} text messages received from friends.`,
-    `- Conversations started: ${byFriend} were started by a friend reaching out to you; ${byYou} were started by you.`,
-    `- ${calls} phone calls with friends.`,
+    `- ${panic} panic attacks logged, one after every club event (chest pain, can't breathe, blurred vision). These are REAL.`,
+    `- ${selfHarm} self-harm events logged: scratching arms to self-calm during meetings. This is REAL.`,
+    `- ${nightsUnder6} nights of sleep under 6 hours${sleepHrs ? ` (${sleepHrs})` : ''}, restless.`,
+    `- ${ideation} ideation signal logged: journaled wanting to "sleep forever".`,
   ];
-  for (const e of inPerson) lines.push(`- In person: ${e.label ?? 'saw a friend in person'}.`);
-  for (const e of coworker) lines.push(`- ${e.label ?? 'a coworker thanked you'}.`);
-  if (symptoms.length > 0) {
-    const labels = symptoms.map((s) => s.label ?? 'physical symptom').join(', ');
-    lines.push(`- ${symptoms.length} physical symptoms you logged: ${labels} (these are REAL).`);
+
+  // Any DOT-extracted facts from prior turns (the longitudinal record growing).
+  const storyFacts = store
+    .getEvents(userId, { kind: 'story_fact', sinceTs })
+    .map((e) => e.label)
+    .filter((l): l is string => !!l);
+  if (storyFacts.length > 0) {
+    lines.push(`- Previously captured from your own words: ${storyFacts.slice(-6).join('; ')}.`);
   }
   return lines.join('\n');
 }

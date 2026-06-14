@@ -50,12 +50,14 @@ export interface ContextPacket {
   /**
    * layer 2 — the counter-evidence the new story reflects against. A flat windowed
    * COUNT(*) over `events` (PORT-MEMORY-DB §3 — enough for the demo, no RRF).
+   * Anxiety-hero record: the panic / self-harm / ideation counts the minimized
+   * story is reflected against.
    */
   evidence: {
     windowDays: number;
-    messagesReceived: number;
-    initiatedByFriend: number;
-    initiatedByYou: number;
+    panicAttacks: number;
+    selfHarm: number;
+    ideation: number;
   };
 }
 
@@ -71,19 +73,24 @@ async function assembleContext(userId: string, now: string): Promise<ContextPack
     // layer 2a — the accumulated slice: recent told stories
     Promise.resolve(store.getStories(userId).slice(0, RECENT_STORIES_N)),
     // layer 2b — the counter-evidence (windowed COUNT over events)
-    Promise.resolve().then(() => {
-      const initiated = store.getEvents(userId, { kind: 'conversation_initiated' });
-      return {
-        windowDays: EVIDENCE_WINDOW_DAYS,
-        messagesReceived: store.countEvents(
-          userId,
-          { kind: 'message_received', sinceDays: EVIDENCE_WINDOW_DAYS },
-          now,
-        ),
-        initiatedByFriend: initiated.filter((e) => e.value === 'friend').length,
-        initiatedByYou: initiated.filter((e) => e.value === 'you').length,
-      };
-    }),
+    Promise.resolve().then(() => ({
+      windowDays: EVIDENCE_WINDOW_DAYS,
+      panicAttacks: store.countEvents(
+        userId,
+        { kind: 'panic_attack', sinceDays: EVIDENCE_WINDOW_DAYS },
+        now,
+      ),
+      selfHarm: store.countEvents(
+        userId,
+        { kind: 'self_harm', sinceDays: EVIDENCE_WINDOW_DAYS },
+        now,
+      ),
+      ideation: store.countEvents(
+        userId,
+        { kind: 'ideation', sinceDays: EVIDENCE_WINDOW_DAYS },
+        now,
+      ),
+    })),
   ]);
   return { history, recentStories, evidence };
 }
@@ -92,8 +99,8 @@ async function assembleContext(userId: string, now: string): Promise<ContextPack
 export function summarizeContext(ctx: ContextPacket): string {
   return (
     `${ctx.history.length} msgs · ${ctx.recentStories.length} prior stories · ` +
-    `evidence[${ctx.evidence.windowDays}d]: ${ctx.evidence.messagesReceived} texts in, ` +
-    `friends initiated ${ctx.evidence.initiatedByFriend} vs you ${ctx.evidence.initiatedByYou}`
+    `evidence[${ctx.evidence.windowDays}d]: ${ctx.evidence.panicAttacks} panic attacks, ` +
+    `${ctx.evidence.selfHarm} self-harm, ${ctx.evidence.ideation} ideation`
   );
 }
 

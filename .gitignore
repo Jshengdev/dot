@@ -8,3 +8,4 @@ dist/
 .evidence/
 *.log
 .DS_Store
+.vercel

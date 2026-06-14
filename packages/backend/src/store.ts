@@ -220,6 +220,16 @@ class MapStore {
   }
 }
 
-// One handle, shared process-wide.
-export const store = new MapStore();
+// One handle, shared process-wide — and PINNED to globalThis so it survives across
+// Next.js dev route cold-compiles / HMR / separate route bundles (each route does its
+// own `await import('@dot/backend')`; webpack can hand a route its own module copy, so
+// without this pin a story written by /api/turn could be invisible to /api/record —
+// exactly the Scene 2→Scene 4 read the demo depends on). In a single production server
+// process this is just the one singleton; the global key makes "one store per process"
+// hold even when the module is evaluated more than once. (No effect on the backend's
+// own tsx test runs — there's one module graph there.)
+const STORE_KEY = Symbol.for('dot.store.singleton');
+type GlobalWithStore = typeof globalThis & { [STORE_KEY]?: MapStore };
+const g = globalThis as GlobalWithStore;
+export const store: MapStore = (g[STORE_KEY] ??= new MapStore());
 export type DotStore = MapStore;

@@ -29,5 +29,12 @@ export {
 export type { Story, Event, DotRun, DotEvent, ClassifiedItem, ClassifyResult } from './types.js';
 
 // The L6 reflection payload + the one call that produces it (defined in run.ts).
-export { runStory, buildReflection, DEMO_SPIRAL } from './run.js';
+// buildStats/buildReport are exported so a route can re-assemble the provider report
+// over the store WITHOUT a second model call (pure reads).
+export { runStory, buildReflection, buildStats, buildReport, DEMO_SPIRAL } from './run.js';
 export type { Reflection, ReportSO, StatAggregate } from './run.js';
+
+// The live conversation spine (Scene 2 onboarding + Scene 3 check-in replies):
+// one inbound message → one live Grok call → grounded reflection, persisted.
+export { runTurn } from './turn.js';
+export type { TurnInput, TurnOutput, ContextPacket } from './turn.js';

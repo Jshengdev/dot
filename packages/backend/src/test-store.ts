@@ -3,9 +3,9 @@
 //
 // Run:  pnpm --filter @dot/backend test:store
 //
-// What it asserts (a failure throws — no silent green):
-//   1. countEvents(message_received, 7d) is in the believable ~48 range.
-//   2. the "who reached out" split is friend 19 vs you 12 (the demo's hook).
+// ANXIETY HERO (docs/sample-story.json). What it asserts (a failure throws):
+//   1. countEvents(panic_attack, 7d) === 6 (a panic attack after every club event).
+//   2. self_harm 2 · ideation 1 (the safety signals the report surfaces).
 //   3. a story written to the store re-reads identically (no LARP persistence).
 
 import { store } from './store.js';
@@ -22,28 +22,27 @@ function main(): void {
   // re-seed once to prove idempotency (must NOT double the counts).
   seedDemoUser();
 
-  // ── 1. counter-evidence: messages received this week ─────────────────────────
+  // ── 1. counter-evidence: panic attacks this week ─────────────────────────────
   // Window anchored to SEED_NOW so the count is deterministic.
-  const received = store.countEvents(
+  const panic = store.countEvents(
     userId,
-    { kind: 'message_received', sinceDays: 7 },
+    { kind: 'panic_attack', sinceDays: 7 },
     SEED_NOW,
   );
-  console.log(`message_received in last 7d: ${received}`);
+  console.log(`panic_attack in last 7d: ${panic}`);
   assert(
-    received === SEED_COUNTS.messageReceived,
-    `expected ${SEED_COUNTS.messageReceived} message_received, got ${received}`,
+    panic === SEED_COUNTS.panicAttack,
+    `expected ${SEED_COUNTS.panicAttack} panic_attack, got ${panic}`,
   );
 
-  // ── 2. the friend-vs-you split (the hook: "who reached out") ──────────────────
-  const initiated = store.getEvents(userId, { kind: 'conversation_initiated' });
-  const byFriend = initiated.filter((e) => e.value === 'friend').length;
-  const byYou = initiated.filter((e) => e.value === 'you').length;
-  console.log(`who reached out — friend: ${byFriend}  vs  you: ${byYou}`);
+  // ── 2. the safety signals (self-harm + ideation — the report surfaces these) ──
+  const selfHarm = store.countEvents(userId, { kind: 'self_harm', sinceDays: 7 }, SEED_NOW);
+  const ideation = store.countEvents(userId, { kind: 'ideation', sinceDays: 7 }, SEED_NOW);
+  console.log(`safety signals — self_harm: ${selfHarm}  ideation: ${ideation}`);
   assert(
-    byFriend === SEED_COUNTS.initiatedByFriend && byYou === SEED_COUNTS.initiatedByYou,
-    `expected friend ${SEED_COUNTS.initiatedByFriend} / you ${SEED_COUNTS.initiatedByYou}, ` +
-      `got friend ${byFriend} / you ${byYou}`,
+    selfHarm === SEED_COUNTS.selfHarm && ideation === SEED_COUNTS.ideation,
+    `expected self_harm ${SEED_COUNTS.selfHarm} / ideation ${SEED_COUNTS.ideation}, ` +
+      `got self_harm ${selfHarm} / ideation ${ideation}`,
   );
 
   // a glimpse of the rest of the record (the provider stat sheet).
@@ -57,17 +56,17 @@ function main(): void {
     id: 'story_demo_1',
     userId,
     transcript:
-      "I feel like everyone has pulled away from me this week. Nobody actually cares.",
-    subjective: ['everyone has pulled away', 'nobody cares about me'],
+      "It was a long week but not too bad. I think im just a very nervous person, chest hurts a bit but we're lowkey chilling.",
+    subjective: ['just a nervous person', "chest hurts a bit, lowkey chilling"],
     objective: [
-      'friends initiated 19 conversations this week',
-      '48 texts received in 7 days',
-      'saw two friends in person on Tuesday',
+      'panic attack after every club event this week (6 days)',
+      'scratched arms to self-calm during meetings (2 days)',
+      'journaled wanting to sleep forever',
     ],
     delta:
-      "You feel everyone pulled away — the record shows your friends reached out 19 times this week, " +
-      "more than the 12 you started yourself.",
-    timeline: ['Tue: saw Maya & Priya', 'Wed: coworker thanked you', 'all week: 48 texts in'],
+      "You tell people you're lowkey chilling — the record shows a panic attack after every club event " +
+      "for 6 days straight, arm-scratching to get through meetings, and wanting to sleep forever.",
+    timeline: ['Mon–Sat: panic after every club night', 'Wed & Fri: arm-scratching', 'Sat: "sleep forever"'],
     createdAt: SEED_NOW,
   };
   store.addStory(story);

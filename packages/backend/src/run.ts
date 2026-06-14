@@ -35,12 +35,10 @@ const STAT_WINDOW_DAYS = 7;
 // show. A kind without a label still renders (falls back to the raw kind) — no
 // silent drop. EDITABLE.
 const KIND_LABELS: Record<string, string> = {
-  message_received: 'texts received',
-  conversation_initiated: 'conversations started',
-  call: 'calls with friends',
-  in_person: 'seen in person',
-  coworker_thanks: 'thanks from a coworker',
-  physical_symptom: 'physical symptoms logged',
+  panic_attack: 'panic attacks logged',
+  self_harm: 'self-harm events logged',
+  sleep_hours: 'nights of sleep logged',
+  ideation: 'ideation signals logged',
   story_fact: 'facts from this story',
 };
 

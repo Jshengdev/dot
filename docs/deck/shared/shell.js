@@ -31,6 +31,7 @@
 
   var SCENES = window.SCENES || [];
   var DOT = window.DOT;
+  var CAPTIONS = window.CAPTIONS || {}; // headliner words, keyed by scene id
 
   // ---- Timing -------------------------------------------------------
   // Each beat auto-advances its internal progress `t` from 0->1 over
@@ -133,6 +134,50 @@
     notesEl.classList.toggle("show", notesOpen);
   }
 
+  // ---- Caption layer (the headliner words) --------------------------
+  // Renders CAPTIONS[scene.id] as an on-screen headline that DEVELOPS IN
+  // after the visual establishes (so the picture reads first, then the
+  // word lands), then holds. Onest, one ink, a soft white halo for
+  // legibility over the light visuals — subtitle-style, never a box.
+  function drawCaption(p, s, tActive) {
+    if (!s) return;
+    var cap = CAPTIONS[s.id];
+    if (!cap || !cap.text) return;
+
+    // develop in over t:[0.12 -> 0.40], then hold at full
+    var a = DOT.ease(DOT.clamp((tActive - 0.12) / 0.28, 0, 1));
+    if (a <= 0.002) return;
+
+    var W = world.w;
+    var H = world.h;
+    var lg = cap.size === "lg";
+    var size = DOT.clamp(W * (lg ? 0.044 : 0.032), lg ? 26 : 20, lg ? 52 : 38);
+    var leading = size * 1.18;
+    var lines = String(cap.text).split("\n");
+
+    var pos = cap.pos || "bottom";
+    var yC = pos === "top" ? H * 0.16 : pos === "center" ? H * 0.5 : H * 0.85;
+    var y0 = yC - ((lines.length - 1) * leading) / 2;
+
+    p.push();
+    p.noStroke();
+    p.textFont("Onest");
+    p.textSize(size);
+    p.textAlign(p.CENTER, p.CENTER);
+    if (typeof p.textLeading === "function") p.textLeading(leading);
+    // soft white halo so words stay legible over dots/lines (no box)
+    if (p.drawingContext) {
+      p.drawingContext.shadowColor = "rgba(255,255,255,0.95)";
+      p.drawingContext.shadowBlur = 22;
+    }
+    p.fill(DOT.col(p, DOT.palette.ink, 0.92 * a));
+    for (var i = 0; i < lines.length; i++) {
+      p.text(lines[i], W / 2, y0 + i * leading);
+    }
+    if (p.drawingContext) p.drawingContext.shadowBlur = 0;
+    p.pop();
+  }
+
   // ---- p5 instance --------------------------------------------------
   var sketch = function (p) {
     p.setup = function () {
@@ -177,6 +222,7 @@
         p.background(DOT.palette.page);
         if (radius > 0.15) buf.filter(p.BLUR, radius);
         p.image(buf, 0, 0, world.w, world.h);
+        drawCaption(p, active, tActive); // headline stays sharp over the developing scene
 
         if (k >= 1) {
           develop = null;
@@ -188,6 +234,7 @@
       // ---- steady state --------------------------------------------
       p.background(DOT.palette.page);
       if (active) active.draw(p, tActive, world);
+      drawCaption(p, active, tActive);
     };
 
     // ---- input ------------------------------------------------------

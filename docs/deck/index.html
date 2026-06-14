@@ -87,34 +87,44 @@
   <!-- Shared helpers + the shell live in helpers.js / shell.js -->
   <script src="shared/helpers.js"></script>
 
-  <!-- Scenes (order = beat order = window.SCENES push order). Add new scene
-       files here, after helpers.js and before shell.js. 01/02 are the
-       REFERENCE continuity pair — the pattern every other beat copies. -->
-  <script src="scenes/01-age-20.js"></script>
-  <script src="scenes/02-age-50.js"></script>
+  <!-- Scenes (order = beat order = window.SCENES push order).
+       THE TIGHT CUT — ~half, ~12 beats, fast enough to leave time for the
+       live demo. You narrate the full idea; the screen holds a short anchor
+       (see captions.js). To restore the full journey, uncomment the PARKED
+       block below. -->
   <script src="scenes/03-cold-call.js"></script>
-  <script src="scenes/06-expected.js"></script>
   <script src="scenes/07-afraid.js"></script>
   <script src="scenes/08-normal.js"></script>
   <script src="scenes/09-everywhere.js"></script>
-  <script src="scenes/10-a-story.js"></script>
-  <script src="scenes/11-unexplained.js"></script>
-  <script src="scenes/12-mask.js"></script>
-  <script src="scenes/13-story-matters.js"></script>
-  <script src="scenes/14-happened-matters.js"></script>
   <script src="scenes/15-two-truths.js"></script>
-  <script src="scenes/16-courage.js"></script>
-  <script src="scenes/17-mislabeled.js"></script>
   <script src="scenes/18-chatgpt.js"></script>
   <script src="scenes/19-youre-right.js"></script>
   <script src="scenes/20-dot-appears.js"></script>
   <script src="scenes/21-both-truths.js"></script>
   <script src="scenes/22-checkins.js"></script>
+  <script src="scenes/26-to-a-human.js"></script>
+  <script src="scenes/27-close.js"></script>
+
+  <!-- PARKED (the long-cut beats — uncomment any to add it back, in order) --
+  <script src="scenes/01-age-20.js"></script>
+  <script src="scenes/02-age-50.js"></script>
+  <script src="scenes/06-expected.js"></script>
+  <script src="scenes/10-a-story.js"></script>
+  <script src="scenes/11-unexplained.js"></script>
+  <script src="scenes/12-mask.js"></script>
+  <script src="scenes/13-story-matters.js"></script>
+  <script src="scenes/14-happened-matters.js"></script>
+  <script src="scenes/16-courage.js"></script>
+  <script src="scenes/17-mislabeled.js"></script>
   <script src="scenes/23-own-it.js"></script>
   <script src="scenes/24-for-who.js"></script>
   <script src="scenes/25-right-one.js"></script>
-  <script src="scenes/26-to-a-human.js"></script>
-  <script src="scenes/27-close.js"></script>
+  -->
+
+
+  <!-- The headliner words (one place to edit every on-screen line). Loads
+       after the scenes, before the shell, which reads window.CAPTIONS. -->
+  <script src="captions.js"></script>
 
   <!-- Shell boots last: it reads window.SCENES and drives the canvas. -->
   <script src="shared/shell.js"></script>
