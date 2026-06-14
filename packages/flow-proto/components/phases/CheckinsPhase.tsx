@@ -49,6 +49,36 @@ export default function CheckinsPhase({ onNext }: { onNext: () => void }) {
   const [draft, setDraft] = useState(''); // the reply composer (typed live on 1, pasted on 2/3)
   const scRef = useRef<HTMLDivElement>(null);
 
+  // ── Presenter control: fire the REAL staggered check-in texts to Johnny's phone.
+  // The iMessage agent exposes GET http://localhost:8790/checkin/<n> (n=0,1,2 →
+  // first / second / the safety+988 one). Each click sends the next, then advances.
+  const SMS_TOTAL = 3;
+  const [smsSent, setSmsSent] = useState(0); // how many real texts LANDED (0..3)
+  const [smsBusy, setSmsBusy] = useState(false); // a send is in flight
+  const [smsError, setSmsError] = useState<string | null>(null); // why nothing landed
+  async function sendNextCheckinSms() {
+    if (smsSent >= SMS_TOTAL || smsBusy) return;
+    const idx = smsSent;
+    setSmsBusy(true);
+    setSmsError(null);
+    try {
+      // The trigger now AWAITS the real Photon send: 200 means it actually landed.
+      const res = await fetch(`http://localhost:8790/checkin/${idx}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}) as { error?: string });
+        throw new Error(body?.error || `trigger ${res.status}`);
+      }
+      setSmsSent((n) => n + 1); // count ONLY a confirmed delivery (no silent stub)
+    } catch (e) {
+      // Surface it — the usual stage cause is opening the https Vercel build, where
+      // the browser blocks https→http://localhost. Run the local page (:5175) and
+      // make sure the iMessage agent is up.
+      setSmsError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSmsBusy(false);
+    }
+  }
+
   // Prewarm DOT's scripted check-in lines so the TTS is instant on the clock tick.
   useEffect(() => {
     CHECKINS.forEach((c) => prewarm(c.text));
@@ -155,6 +185,67 @@ export default function CheckinsPhase({ onNext }: { onNext: () => void }) {
           <div className="text-[15px] font-medium">good reminders — never &ldquo;are you ok&rdquo;</div>
         </div>
       </div>
+
+      {/* presenter control — fire the REAL staggered check-in texts to my phone.
+          n=0 first · n=1 second · n=2 the safety check-in (988). Clean white card,
+          trust-blue accent; relabels + disables after the 3rd. */}
+      <button
+        type="button"
+        onClick={sendNextCheckinSms}
+        disabled={smsSent >= SMS_TOTAL || smsBusy}
+        className="mb-2 flex w-full items-center justify-between gap-3 rounded-2xl bg-page px-4 py-3 text-left transition-[box-shadow,transform] active:scale-[0.99]"
+        style={{
+          boxShadow:
+            'inset 0 0 0 1px rgba(255,255,255,0.9), 0 0 0 1px color-mix(in srgb, var(--blue) 22%, transparent), 0 6px 22px rgba(0,122,255,0.12)',
+          color: 'var(--blue-ink)',
+          opacity: smsSent >= SMS_TOTAL ? 0.65 : 1,
+          cursor: smsSent >= SMS_TOTAL || smsBusy ? 'default' : 'pointer',
+        }}
+      >
+        <span className="flex flex-col gap-0.5">
+          <span className="text-[14px] font-medium leading-tight" style={{ color: 'var(--ink-90)' }}>
+            {smsBusy
+              ? '📲 texting your phone…'
+              : smsSent >= SMS_TOTAL
+                ? '✓ all 3 check-ins sent to my phone'
+                : smsSent === SMS_TOTAL - 1
+                  ? '📲 simulate next day — text me the safety check-in →'
+                  : '📲 simulate next day — text me the check-in →'}
+          </span>
+          <span className="font-mono text-[10px] lowercase tracking-wide text-blue-ink">
+            {smsSent >= SMS_TOTAL
+              ? 'sent 3/3 · #3 was the safety check-in (988)'
+              : `sent ${smsSent}/${SMS_TOTAL} · real sms to my phone${
+                  smsSent === SMS_TOTAL - 1 ? ' · next is the 988 safety check-in' : ''
+                }`}
+          </span>
+        </span>
+        <span
+          className="shrink-0 rounded-full px-3 py-1.5 font-mono text-[12px] tracking-wide"
+          style={{
+            background: 'var(--blue-tint)',
+            color: 'var(--blue-ink)',
+          }}
+        >
+          {smsSent >= SMS_TOTAL ? '3/3' : `${smsSent}/${SMS_TOTAL}`}
+        </span>
+      </button>
+
+      {/* No silent stubs — if the trigger didn't land, say why (right where it failed). */}
+      {smsError && (
+        <div
+          role="alert"
+          className="mb-2 rounded-xl px-3 py-2 font-mono text-[10px] leading-snug"
+          style={{
+            background: 'color-mix(in srgb, var(--bad) 7%, transparent)',
+            boxShadow: '0 0 0 1px color-mix(in srgb, var(--bad) 40%, transparent)',
+            color: 'var(--bad)',
+          }}
+        >
+          didn&apos;t send · {smsError} — open the local page (localhost:5175, not the https url) and make sure the
+          imessage agent is running.
+        </div>
+      )}
 
       {/* the thread */}
       <div ref={scRef} className="no-scrollbar flex flex-1 flex-col gap-1 overflow-y-auto py-4">

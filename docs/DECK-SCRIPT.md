@@ -1,26 +1,25 @@
 # DECK SCRIPT — what you say over each beat
 
 > **How to use.** Each beat = a p5 visual + a short on-screen **header** (the anchor) + the **line you speak** over it.
-> `[x]` = in the current tight cut (12 beats). `[ ]` = parked (still built, one uncomment to add back).
+> `[x]` = in the current cut. `[ ]` = parked (still built, one uncomment to add back).
 > **Pick your beats:** flip the boxes, then tell me — I'll rebuild `index.html` (loaded scenes) + `captions.js` (headers).
-> Voice on screen = lowercase anchor; voice out loud = whatever's natural for you. Tune any spoken line freely.
-> Pace ≈ 5–7s per beat → the 12-beat cut is ~75 sec, leaving the rest of your 3 min for the live demo.
+> Pace ≈ 5–7s per beat → the current 15-beat cut is ~90 sec; trim toward ~75 to leave more for the live demo.
 
 ---
 
 ## ACT 1 — the discovery
 
 - [x] **1. cold-call** · screen: *i cold-called strangers*
-  > "About six months ago, I cold-called strangers — to find their pain, and pitch them a fix."
+  > "About six months ago, I had a homework assignment — to cold-call strangers. To find their pain, and pitch them a fix."
 
-- [ ] **2. age 20→50** · screen: *as young as 20 · as old as 50*  *(2 scenes)*
-  > "People as young as twenty. As old as fifty."
+- [x] **2. age 20→50** · screen: *as young as 20 · as old as 50*  *(2 scenes)*
+  > "I talked to people facing health problems — as young as twenty, as old as fifty."
 
-- [ ] **3. expected** · screen: *i expected the obvious*
-  > "I expected they'd want reminders. Fewer missed appointments. A translator."
+- [x] **3. expected** · screen: *i expected a fix*
+  > "And when I approached them — expecting they were looking for some solution — there was something else holding them back, far more."
 
-- [x] **4. afraid** · screen: *they were all afraid*
-  > "But they were all afraid. And they all wanted the same thing."
+- [x] **4. afraid** · screen: *something held them back*
+  > "And that was the realization — they all wanted the same thing."
 
 - [x] **5. normal** · screen: **to feel normal again**
   > "To feel normal again."
@@ -29,8 +28,8 @@
 
 ## ACT 2 — the problem
 
-- [x] **6. everywhere** · screen: *then — everywhere*
-  > "Then I started seeing it everywhere. Friends. People close to me."
+- [x] **6. everywhere** · screen: *then i saw it everywhere*
+  > "After that, I saw it everywhere. There's a stigma around even asking for help."
 
 - [ ] **7. a-story** · screen: *a story, unheard*
   > "Each carrying a story they needed someone to hear."
@@ -92,8 +91,7 @@
 
 ---
 
-## The current 12-beat cut (running order)
-cold-call → afraid → normal → everywhere → two-truths → chatgpt → youre-right → dot-appears → both-truths → checkins → to-a-human → close
+## The current cut (running order, 15 beats)
+cold-call → age 20→50 → expected → afraid → normal → everywhere → two-truths → chatgpt → youre-right → dot-appears → both-truths → checkins → to-a-human → close
 
-**Leaner 9-beat option** (drop *everywhere*, *both-truths*, *checkins*):
-cold-call → afraid → normal → two-truths → chatgpt → youre-right → dot-appears → to-a-human → close
+**To trim toward ~75 sec:** drop *everywhere*, *both-truths*, *checkins* (or any `[x]` you don't need) — just tell me which.

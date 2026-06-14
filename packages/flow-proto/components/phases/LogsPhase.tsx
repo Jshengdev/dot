@@ -28,13 +28,13 @@ type RecordPayload = { stories?: unknown[]; events?: unknown[]; stats?: StatAggr
 // facts in the corners (these pop off + float). LOG_NODES order is s,s,s,f,f,f,f —
 // 3 story + 4 fact. We place story on a left/centre arc, facts on a right/outer arc.
 const POS = [
-  { x: 30, y: 18 }, // s1 'a very nervous person' — top-left
-  { x: 22, y: 47 }, // s2 'chest hurts a bit' — left
-  { x: 30, y: 76 }, // s3 the minimized version — bottom-left
-  { x: 70, y: 14 }, // f1 panic every day — top-right
-  { x: 80, y: 38 }, // f2 chest pain / blurred vision — right-upper
-  { x: 80, y: 60 }, // f3 scratching arms — right-lower
-  { x: 70, y: 82 }, // f4 exhaustion / 'sleep forever' — bottom-right
+  { x: 25, y: 20 }, // s1 'a very nervous person' — top-left (the threaded story arc)
+  { x: 18, y: 49 }, // s2 'chest hurts a bit' — left
+  { x: 26, y: 78 }, // s3 the minimized version — bottom-left
+  { x: 75, y: 17 }, // f1 panic every day — top-right (the facts that pop free)
+  { x: 83, y: 41 }, // f2 chest pain / blurred vision — right-upper
+  { x: 81, y: 64 }, // f3 scratching arms — right-lower
+  { x: 72, y: 85 }, // f4 exhaustion / 'sleep forever' — bottom-right
 ];
 
 // the continuous thread through the STORY nodes (indices 0,1,2), top→bottom on the left.
@@ -96,7 +96,7 @@ export default function LogsPhase({
         const dx = p.x - 50;
         const dy = p.y - 50;
         const len = Math.hypot(dx, dy) || 1;
-        return { x: (dx / len) * 64, y: (dy / len) * 64, r: (dx / len) * 4 };
+        return { x: (dx / len) * 44, y: (dy / len) * 44, r: (dx / len) * 3 };
       }),
     [],
   );
