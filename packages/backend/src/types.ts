@@ -100,3 +100,137 @@ export type DotEvent =
   | { type: 'reflect:delta'; runId: string; story: Story } // ← THE demo-moment event
   | { type: 'run:awaiting-human'; runId: string } // human-on-risk branch (pause)
   | { type: 'run:failed'; runId: string; node: string; error: string };
+
+// ── The knowledge graph (the LIVE conversational intake substrate) ────────────
+// A live intake turns the thread into a graph: every turn is a node, and each
+// claim/symptom/event/person the user surfaces is its own node, edged back to the
+// turn(s) it was said in. The graph IS what the five intake panels render against
+// (symptoms / timeline / two-truths / risk / context). One typed id per node so a
+// re-mention MERGES (no duplicate 'symptom:insomnia'); edges carry the evidence so
+// every line is traceable back to a real turn.
+
+/** The kinds of node the graph holds. Open-ended in spirit, fixed here so the
+ *  panels know what to draw. 'turn' is the conversation spine; the rest are
+ *  extracted concepts that hang off the turns they were said in. */
+export const NODE_TYPES = [
+  'turn',
+  'person',
+  'symptom',
+  'event',
+  'timeframe',
+  'claim_subjective',
+  'fact_objective',
+  'trigger',
+  'coping',
+  'risk_signal',
+] as const;
+export const NodeTypeSchema = z.enum(NODE_TYPES);
+export type NodeType = z.infer<typeof NodeTypeSchema>;
+
+/** Which intake panel a node belongs on. The graph is sliced by panel for render. */
+export const PanelSchema = z.enum(['symptoms', 'timeline', 'two-truths', 'risk', 'context']);
+export type Panel = z.infer<typeof PanelSchema>;
+
+/** How loud a node is. Drives sizing/ordering on its panel; merge keeps the higher. */
+export const SalienceSchema = z.enum(['low', 'med', 'high']);
+export type Salience = z.infer<typeof SalienceSchema>;
+
+/** One node in the graph. `id` is typed (e.g. 'symptom:insomnia') so a re-mention
+ *  merges in place; `evidenceTurnIds` are the turns that grounded it. */
+export const GraphNodeSchema = z.object({
+  id: z.string(), // typed id, e.g. 'symptom:insomnia' — the merge key
+  type: NodeTypeSchema,
+  name: z.string(), // short display label
+  summary: z.string(), // one sentence
+  tags: z.array(z.string()),
+  salience: SalienceSchema,
+  panel: PanelSchema,
+  evidenceTurnIds: z.array(z.string()), // turn node ids that grounded this node
+});
+export type GraphNode = z.infer<typeof GraphNodeSchema>;
+
+/** The kinds of edge the graph holds (how concepts relate / the objective-mirror
+ *  relations: minimizes, contradicts, escalates...). */
+export const EDGE_TYPES = [
+  'said_in',
+  'experiences',
+  'minimizes',
+  'contradicts',
+  'caused_by',
+  'occurred_on',
+  'escalates',
+  'relieves',
+  'co_occurs',
+] as const;
+export const EdgeTypeSchema = z.enum(EDGE_TYPES);
+export type EdgeType = z.infer<typeof EdgeTypeSchema>;
+
+/** Default confidence per edge kind — a prior the extractor can lean on / override.
+ *  Higher = a relation we trust more when we draw the line. */
+export const EDGE_WEIGHTS: Record<EdgeType, number> = {
+  said_in: 1,
+  experiences: 0.8,
+  minimizes: 0.8,
+  contradicts: 0.9,
+  caused_by: 0.8,
+  occurred_on: 0.7,
+  escalates: 0.9,
+  relieves: 0.6,
+  co_occurs: 0.5,
+};
+
+/** One edge: a typed, weighted, evidence-backed relation between two node ids. */
+export const GraphEdgeSchema = z.object({
+  source: z.string(), // node id
+  target: z.string(), // node id
+  type: EdgeTypeSchema,
+  direction: z.enum(['forward', 'bidirectional']),
+  weight: z.number().min(0).max(1), // 0..1 confidence; merge keeps the higher
+  evidenceTurnIds: z.array(z.string()),
+});
+export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
+
+/** The whole graph for one user — what the intake panels read. */
+export const GraphSchema = z.object({
+  nodes: z.array(GraphNodeSchema),
+  edges: z.array(GraphEdgeSchema),
+});
+export type Graph = z.infer<typeof GraphSchema>;
+
+// ── Conversation lifecycle (when the intake is live vs wrapping up vs done) ────
+// One open conversation per user. The graph is built incrementally as turns land;
+// `lastChunkedTurnId` marks how far the chunker has consumed so re-runs are cheap.
+
+export const ConversationStatusSchema = z.enum(['open', 'closing', 'closed']);
+export type ConversationStatus = z.infer<typeof ConversationStatusSchema>;
+
+export const ConversationMetaSchema = z.object({
+  userId: z.string(),
+  status: ConversationStatusSchema,
+  openedAt: z.string(), // ISO
+  closedAt: z.string().optional(), // ISO
+  turnCount: z.number(),
+  closeReason: z.string().optional(),
+  lastChunkedTurnId: z.string().optional(), // graph-build watermark
+});
+export type ConversationMeta = z.infer<typeof ConversationMetaSchema>;
+
+// ── The check-in plan (the timer) ─────────────────────────────────────────────
+// On close, the intake schedules forward check-ins: a prompt to send later, the
+// node/concern it's WATCHING, and why. `getDueCheckIns(now)` is the timer read.
+
+export const CheckInStatusSchema = z.enum(['pending', 'sent', 'done', 'skipped']);
+export type CheckInStatus = z.infer<typeof CheckInStatusSchema>;
+
+export const CheckInSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  prompt: z.string(), // what DOT will say at check-in time
+  watching: z.string(), // the node id / concern this check-in is tracking
+  reason: z.string(), // why this check-in was scheduled
+  scheduledFor: z.string(), // ISO — when it's due
+  status: CheckInStatusSchema,
+  createdAt: z.string(), // ISO
+  sentAt: z.string().optional(), // ISO — set when it fires
+});
+export type CheckIn = z.infer<typeof CheckInSchema>;

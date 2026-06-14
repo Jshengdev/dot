@@ -14,7 +14,15 @@
 // always passed in by the caller (no Math.random / implicit Date.now), so a test
 // or seed run is reproducible.
 
-import type { Event, Story } from './types.js';
+import type {
+  CheckIn,
+  ConversationMeta,
+  Event,
+  Graph,
+  GraphEdge,
+  GraphNode,
+  Story,
+} from './types.js';
 
 // ── Records the store owns ────────────────────────────────────────────────────
 
@@ -65,12 +73,23 @@ class MapStore {
   private stories = new Map<string, Story>();
   private events = new Map<string, Event>();
 
+  // The LIVE-intake substrate. Graph is per-user (the panels read one user's
+  // graph); nodes keyed by their typed id, edges keyed by (source|target|type) so
+  // a re-mention/re-relation merges in place instead of duplicating. Conversation
+  // meta is one row per user; check-ins are the forward timer (one map, queried
+  // by user and by due-time).
+  private conversations = new Map<string, ConversationMeta>(); // userId → meta
+  private graphNodes = new Map<string, Map<string, GraphNode>>(); // userId → (nodeId → node)
+  private graphEdges = new Map<string, Map<string, GraphEdge>>(); // userId → (edgeKey → edge)
+  private checkins = new Map<string, CheckIn>(); // checkInId → check-in
+
   // Monotonic id counters, one namespace per collection. Deterministic, no RNG.
   private counters: Record<string, number> = {
     user: 0,
     msg: 0,
     story: 0,
     event: 0,
+    checkin: 0,
   };
 
   private nextId(ns: keyof typeof this.counters): string {
@@ -130,6 +149,13 @@ class MapStore {
     for (const [id, m] of this.messages) if (m.userId === userId) this.messages.delete(id);
     for (const [id, s] of this.stories) if (s.userId === userId) this.stories.delete(id);
     for (const [id, e] of this.events) if (e.userId === userId && e.source === 'story') this.events.delete(id);
+    // Also wipe the live-intake substrate for this user: the whole graph, the
+    // conversation meta, and every scheduled check-in. (The graph/conversation are
+    // built fresh each intake; nothing here is the durable counter-evidence.)
+    this.graphNodes.delete(userId);
+    this.graphEdges.delete(userId);
+    this.conversations.delete(userId);
+    for (const [id, c] of this.checkins) if (c.userId === userId) this.checkins.delete(id);
   }
 
   // ── stories ──────────────────────────────────────────────────────────────────
@@ -218,6 +244,149 @@ class MapStore {
       .map(([kind, count]) => ({ kind, count, window }))
       .sort((a, b) => b.count - a.count);
   }
+
+  // ── conversation lifecycle ─────────────────────────────────────────────────
+  // One open conversation per user. upsert overwrites the row wholesale (the
+  // caller owns the merge of turnCount / status / watermark).
+
+  /** The user's conversation meta, or undefined if no intake has opened. */
+  getConversation(userId: string): ConversationMeta | undefined {
+    return this.conversations.get(userId);
+  }
+
+  /** Set/replace the user's conversation meta. Returns what was stored. */
+  upsertConversation(meta: ConversationMeta): ConversationMeta {
+    this.conversations.set(meta.userId, meta);
+    return meta;
+  }
+
+  // ── the knowledge graph (per-user) ─────────────────────────────────────────
+  // Incremental build: nodes merge by typed id (UNION evidence, keep louder
+  // salience); edges merge by (source,target,type) (keep higher weight, UNION
+  // evidence). Edges that dangle (a source/target with no node) are DROPPED — the
+  // graph the panels read is always internally consistent.
+
+  private nodeMapFor(userId: string): Map<string, GraphNode> {
+    let m = this.graphNodes.get(userId);
+    if (!m) {
+      m = new Map<string, GraphNode>();
+      this.graphNodes.set(userId, m);
+    }
+    return m;
+  }
+
+  private edgeMapFor(userId: string): Map<string, GraphEdge> {
+    let m = this.graphEdges.get(userId);
+    if (!m) {
+      m = new Map<string, GraphEdge>();
+      this.graphEdges.set(userId, m);
+    }
+    return m;
+  }
+
+  /** Merge nodes into the user's graph by `id`: UNION evidenceTurnIds, keep the
+   *  higher salience, take the latest name/summary/tags/panel/type. */
+  upsertNodes(userId: string, nodes: GraphNode[]): void {
+    const m = this.nodeMapFor(userId);
+    for (const incoming of nodes) {
+      const existing = m.get(incoming.id);
+      if (!existing) {
+        m.set(incoming.id, {
+          ...incoming,
+          evidenceTurnIds: [...new Set(incoming.evidenceTurnIds)],
+        });
+        continue;
+      }
+      m.set(incoming.id, {
+        ...existing,
+        ...incoming,
+        salience: maxSalience(existing.salience, incoming.salience),
+        evidenceTurnIds: [...new Set([...existing.evidenceTurnIds, ...incoming.evidenceTurnIds])],
+      });
+    }
+  }
+
+  /** Merge edges into the user's graph. DROP any edge whose source or target is not
+   *  an existing node id (no dangling lines). Dedupe by (source,target,type): keep
+   *  the higher weight + UNION evidenceTurnIds. */
+  upsertEdges(userId: string, edges: GraphEdge[]): void {
+    const nodes = this.nodeMapFor(userId);
+    const m = this.edgeMapFor(userId);
+    for (const incoming of edges) {
+      if (!nodes.has(incoming.source) || !nodes.has(incoming.target)) continue; // drop dangling
+      const key = edgeKey(incoming);
+      const existing = m.get(key);
+      if (!existing) {
+        m.set(key, {
+          ...incoming,
+          evidenceTurnIds: [...new Set(incoming.evidenceTurnIds)],
+        });
+        continue;
+      }
+      m.set(key, {
+        ...existing,
+        ...incoming,
+        weight: Math.max(existing.weight, incoming.weight),
+        evidenceTurnIds: [...new Set([...existing.evidenceTurnIds, ...incoming.evidenceTurnIds])],
+      });
+    }
+  }
+
+  /** The whole graph for a user (empty {nodes:[],edges:[]} if none yet). */
+  getGraph(userId: string): Graph {
+    return {
+      nodes: [...this.nodeMapFor(userId).values()],
+      edges: [...this.edgeMapFor(userId).values()],
+    };
+  }
+
+  // ── check-ins (the forward timer) ──────────────────────────────────────────
+  // Pre-shaped CheckIns arrive with ids (or get one assigned). The timer read is
+  // getDueCheckIns(now): pending + past-due, soonest first.
+
+  /** Schedule check-ins. Each gets an id if it doesn't carry one. */
+  addCheckIns(checkins: CheckIn[]): void {
+    for (const c of checkins) {
+      const id = c.id || this.nextId('checkin');
+      this.checkins.set(id, { ...c, id });
+    }
+  }
+
+  /** All check-ins for a user, soonest-scheduled first. */
+  getCheckIns(userId: string): CheckIn[] {
+    return [...this.checkins.values()]
+      .filter((c) => c.userId === userId)
+      .sort((a, b) => (a.scheduledFor < b.scheduledFor ? -1 : a.scheduledFor > b.scheduledFor ? 1 : 0));
+  }
+
+  /** The timer read: pending check-ins whose time has come (scheduledFor <= now),
+   *  soonest first. `now` is injected (determinism). */
+  getDueCheckIns(now: string): CheckIn[] {
+    return [...this.checkins.values()]
+      .filter((c) => c.status === 'pending' && c.scheduledFor <= now)
+      .sort((a, b) => (a.scheduledFor < b.scheduledFor ? -1 : a.scheduledFor > b.scheduledFor ? 1 : 0));
+  }
+
+  /** Patch one check-in (e.g. status→'sent', sentAt). Returns the new row, or
+   *  undefined if the id is unknown. `id` can't be patched away. */
+  updateCheckIn(id: string, patch: Partial<CheckIn>): CheckIn | undefined {
+    const existing = this.checkins.get(id);
+    if (!existing) return undefined;
+    const next: CheckIn = { ...existing, ...patch, id };
+    this.checkins.set(id, next);
+    return next;
+  }
+}
+
+// Salience is ordinal; merge keeps the louder of two.
+const SALIENCE_RANK: Record<GraphNode['salience'], number> = { low: 0, med: 1, high: 2 };
+function maxSalience(a: GraphNode['salience'], b: GraphNode['salience']): GraphNode['salience'] {
+  return SALIENCE_RANK[a] >= SALIENCE_RANK[b] ? a : b;
+}
+
+// Edge identity = (source, target, type). Pipe-joined; node ids don't contain '|'.
+function edgeKey(e: GraphEdge): string {
+  return `${e.source}|${e.target}|${e.type}`;
 }
 
 // One handle, shared process-wide — and PINNED to globalThis so it survives across

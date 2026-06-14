@@ -12,6 +12,7 @@
     "test:store": "tsx src/test-store.ts",
     "test:extract": "tsx src/test-extract.ts",
     "test:turn": "tsx src/test-turn.ts",
+    "test:flow": "tsx src/test-flow.ts",
     "test:director": "tsx src/test-director.ts",
     "serve": "tsx src/serve-director.ts",
     "imessage": "tsx src/imessage/run.ts",
