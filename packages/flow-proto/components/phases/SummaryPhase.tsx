@@ -22,6 +22,31 @@ import { SUMMARY } from '@/lib/script';
 const EASE = [0.16, 1, 0.3, 1] as const;
 const PR = SUMMARY.provider_report;
 
+// ── open-morph motion (the ported "bloom open + staggered settle") ───────────
+// The panel is the SHAPE: it morphs in (blur-up), and only AFTER it settles do the
+// rows reveal — staggered ~55ms apart. One soft ease (the locked design curve),
+// nothing bounces, blur-up on content change. `when:'beforeChildren'` is the
+// hide-during-morph / reveal-after rule from the spec.
+const PANEL_MORPH = {
+  hidden: { opacity: 0, y: 22, scale: 0.96, filter: 'blur(8px)' },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    // the shape forms first; rows begin cascading as it settles (~0.28s in), 50ms apart
+    transition: { duration: 0.45, ease: EASE, delayChildren: 0.28, staggerChildren: 0.05 },
+  },
+  exit: { opacity: 0, y: 14, scale: 0.98, filter: 'blur(4px)', transition: { duration: 0.3, ease: EASE } },
+} as const;
+
+// each row blooms up as its turn in the stagger arrives
+const ROW_REVEAL = {
+  hidden: { opacity: 0, y: 10, filter: 'blur(6px)' },
+  show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.42, ease: EASE } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+} as const;
+
 // Reflection-ish shape — structural match to the page cache (no @dot/backend dep).
 type StorySplit = { subjective: string[]; objective: string[]; delta: string };
 type ReflectionLike = {
@@ -153,9 +178,9 @@ export default function SummaryPhase({
       {split?.delta && (
         <motion.div
           className="mt-3 rounded-[14px] bg-raised p-4 shadow-ring"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+          initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.32 }}
         >
           <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-35">
             the gap · not a verdict
@@ -188,14 +213,14 @@ export default function SummaryPhase({
           >
             <motion.div
               className="w-full max-w-[600px] rounded-[20px] bg-page p-7 shadow-ring-lg"
-              initial={{ opacity: 0, y: 24, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.98 }}
-              transition={{ duration: 0.4, ease: EASE }}
+              variants={PANEL_MORPH}
+              initial="hidden"
+              animate="show"
+              exit="exit"
               onClick={(e) => e.stopPropagation()}
             >
               {/* provenance header — states the guardrail plainly */}
-              <div className="flex items-start justify-between gap-4">
+              <motion.div variants={ROW_REVEAL} className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-[17px]" style={{ fontWeight: 480 }}>
                     DOT summary
@@ -211,10 +236,11 @@ export default function SummaryPhase({
                 >
                   ×
                 </button>
-              </div>
+              </motion.div>
 
               {/* SAFETY BANNER — most-important-first, on TOP, never buried */}
-              <div
+              <motion.div
+                variants={ROW_REVEAL}
                 className="mt-4 flex items-start gap-3 rounded-[14px] p-4"
                 style={{ background: 'var(--warn-bg)', color: 'var(--warn-text)' }}
               >
@@ -224,7 +250,7 @@ export default function SummaryPhase({
                 <p className="text-[13px] leading-relaxed">
                   {PR.safety_banner.replace(/^⚠\s*/, '')}
                 </p>
-              </div>
+              </motion.div>
 
               {/* chief concern — the patient's voice */}
               <Section title="chief concern">
@@ -285,7 +311,7 @@ export default function SummaryPhase({
               </Section>
 
               {/* (c) see detailed — the Mon→Sat timeline, "what happened" vs "what was felt" */}
-              <div className="mt-6">
+              <motion.div variants={ROW_REVEAL} className="mt-6">
                 <button
                   onClick={() => setDetailed((d) => !d)}
                   className="font-mono text-[12px] lowercase tracking-wide text-ink-50"
@@ -323,12 +349,17 @@ export default function SummaryPhase({
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
 
               {/* the guardrail footnote — S/O only, never A/P */}
-              <p className="mt-5 font-mono text-[10px] leading-relaxed text-ink-35">{PR.mapping_note}</p>
+              <motion.p
+                variants={ROW_REVEAL}
+                className="mt-5 font-mono text-[10px] leading-relaxed text-ink-35"
+              >
+                {PR.mapping_note}
+              </motion.p>
 
-              <div className="mt-6 flex items-center gap-3">
+              <motion.div variants={ROW_REVEAL} className="mt-6 flex items-center gap-3">
                 <PillButton onClick={copy}>{copied ? 'copied ✓' : 'copy to share'}</PillButton>
                 <button
                   onClick={() => setReport(false)}
@@ -336,7 +367,7 @@ export default function SummaryPhase({
                 >
                   done
                 </button>
-              </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}
@@ -363,9 +394,9 @@ function Panel({
   return (
     <motion.div
       className="rounded-[14px] bg-raised p-4 shadow-ring"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: EASE, delay }}
+      initial={{ opacity: 0, y: 14, scale: 0.98, filter: 'blur(6px)' }}
+      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+      transition={{ duration: 0.55, ease: EASE, delay }}
     >
       <div className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-35">{title}</div>
       {items && items.length > 0 ? (
@@ -390,9 +421,9 @@ function Panel({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mt-5">
+    <motion.div variants={ROW_REVEAL} className="mt-5">
       <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-35">{title}</div>
       {children}
-    </div>
+    </motion.div>
   );
 }

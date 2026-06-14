@@ -155,23 +155,78 @@ export type LogNode = {
   label: string;
   kind: 'fact' | 'story';
   detail: string;
+  // the box opens to the VERBATIM source: for a fact, the exact journal words; for
+  // a story node, the minimized version said out loud. `record` is the counted
+  // provider-bound line (facts only — what travels to a clinician).
+  quote: string;
+  record?: string;
 };
 
 export const YAP = 'the journal entry';
 
 // `LOG_NODES` = the objective facts (float out as nodes) + the subjective story
 // (joins into one thread). `fact` = objective[] (provider-bound); `story` =
-// subjective[] (the told/minimized version).
+// subjective[] (the told/minimized version). Each node is CLICKABLE → blooms open
+// to its verbatim source (journal quote vs minimized framing) + the counted record.
 export const LOG_NODES: LogNode[] = [
   // STORY — subjective[] (how it's framed out loud / minimized)
-  { id: 's1', kind: 'story', label: "just 'a very nervous person'", detail: "frames daily panic as simply being nervous; clubs 'stressing me out a little'" },
-  { id: 's2', kind: 'story', label: "'chest hurts a bit', week 'not too bad'", detail: "downplays severe symptoms; 'lowkey chilling'" },
-  { id: 's3', kind: 'story', label: 'the casual, minimized version', detail: "omits daily attacks, severe pain, self-scratching, and 'sleep forever'" },
+  {
+    id: 's1',
+    kind: 'story',
+    label: "just 'a very nervous person'",
+    detail: "frames daily panic as simply being nervous; clubs 'stressing me out a little'",
+    quote: "i'm just a really nervous person — the clubs stress me out a little, that's all.",
+  },
+  {
+    id: 's2',
+    kind: 'story',
+    label: "'chest hurts a bit', week 'not too bad'",
+    detail: "downplays severe symptoms; 'lowkey chilling'",
+    quote: "my chest hurts a bit, but the week's honestly been not too bad. lowkey chilling.",
+  },
+  {
+    id: 's3',
+    kind: 'story',
+    label: 'the casual, minimized version',
+    detail: "omits daily attacks, severe pain, self-scratching, and 'sleep forever'",
+    quote: 'honestly? nothing major. just a normal kinda stressful week.',
+  },
   // FACT — objective[] (what verifiably happened → goes to the provider)
-  { id: 'f1', kind: 'fact', label: 'panic attack every day this week', detail: 'after every club event — at least one per day' },
-  { id: 'f2', kind: 'fact', label: "severe chest pain, can't breathe, blurred vision", detail: 'vision blurs from insufficient air' },
-  { id: 'f3', kind: 'fact', label: 'scratching arms to self-calm', detail: 'during club meetings, to keep breathing + concentrate' },
-  { id: 'f4', kind: 'fact', label: "exhaustion + 'sleep forever', yet can't stop", detail: "wants to sleep forever; can't rest for fear of missing out" },
+  {
+    id: 'f1',
+    kind: 'fact',
+    label: 'panic attack every day this week',
+    detail: 'after every club event — at least one per day',
+    quote: "I think I've had at least one panic attack a day this week haha. After every club event.",
+    record: 'Panic attacks logged 6 of the last 6 days — onset Mon 6/8, after every club event.',
+  },
+  {
+    id: 'f2',
+    kind: 'fact',
+    label: "severe chest pain, can't breathe, blurred vision",
+    detail: 'vision blurs from insufficient air',
+    quote:
+      "My chest hurts like hell. I can't breathe, I can't even see anything because my vision is blurry bc I don't get enough air.",
+    record: 'Episode severity self-rated 8–9/10, peak Thu 6/11 (worst chest pain).',
+  },
+  {
+    id: 'f3',
+    kind: 'fact',
+    label: 'scratching arms to self-calm',
+    detail: 'during club meetings, to keep breathing + concentrate',
+    quote:
+      'I end up scratching my arms during club meetings to keep myself calm bc otherwise I just can’t breathe I can’t concentrate.',
+    record: 'Self-harm (arm scratching to self-calm) logged 2 days — Wed 6/10, Fri 6/12.',
+  },
+  {
+    id: 'f4',
+    kind: 'fact',
+    label: "exhaustion + 'sleep forever', yet can't stop",
+    detail: "wants to sleep forever; can't rest for fear of missing out",
+    quote:
+      'All I want to do is sleep forever and forever. I’m so exhausted. But I also can’t, if I stop moving it feels like I’m missing out on too much.',
+    record: "Ideation signal ('sleep forever') logged 6/13 · sleep 4–5 hrs/night, restless.",
+  },
 ];
 
 // The objective record (the 6-day pattern) — sample-story.json `events[]`.

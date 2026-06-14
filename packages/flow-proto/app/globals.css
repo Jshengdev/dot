@@ -115,6 +115,18 @@ body {
 .upill--fact.is-free .ud::after { content: ' · → provider'; color: var(--blue); }
 .upill--dim { opacity: 0.92; }
 
+/* clickable nodes — cursor + a faint "open" mark that only shows on hover (no
+   resting clutter). The lift already comes from .upill:hover. */
+.upill--tap { position: relative; }
+.upill-open {
+  position: absolute; top: 7px; right: 9px;
+  font-family: var(--font-mono); font-size: 11px; line-height: 1;
+  color: var(--blue); opacity: 0; transform: translateY(1px);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+  pointer-events: none;
+}
+.upill--tap:hover .upill-open { opacity: 0.65; transform: translateY(0); }
+
 /* connecting lines (SVG) sit under the pills, over the bg */
 .ugraph-lines { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 

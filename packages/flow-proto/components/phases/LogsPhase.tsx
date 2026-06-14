@@ -20,6 +20,27 @@ import { LOG_NODES } from '@/lib/script';
 const EASE = [0.16, 1, 0.3, 1] as const;
 const CENTER = { x: 50, y: 47 };
 
+// ── open-morph motion (the same "bloom open + staggered settle" as the report) ──
+// A clicked node blooms into a panel: the SHAPE morphs in (blur-up + scale), then
+// the verbatim rows reveal as it settles, ~55ms apart. Locked design ease, nothing
+// bounces, blur-up on content change.
+const PANEL_MORPH = {
+  hidden: { opacity: 0, y: 18, scale: 0.94, filter: 'blur(8px)' },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 0.42, ease: EASE, delayChildren: 0.24, staggerChildren: 0.055 },
+  },
+  exit: { opacity: 0, y: 12, scale: 0.97, filter: 'blur(4px)', transition: { duration: 0.26, ease: EASE } },
+} as const;
+const ROW_REVEAL = {
+  hidden: { opacity: 0, y: 9, filter: 'blur(6px)' },
+  show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.4, ease: EASE } },
+  exit: { opacity: 0, transition: { duration: 0.12 } },
+} as const;
+
 // Reflection-ish shape — structural match to the page's cache (no @dot/backend dep).
 type StatAggregate = { kind: string; label: string; count: number; window: string };
 type RecordPayload = { stories?: unknown[]; events?: unknown[]; stats?: StatAggregate[] };
@@ -63,6 +84,7 @@ export default function LogsPhase({
   const [connected, setConnected] = useState(false);
   const [stats, setStats] = useState<StatAggregate[] | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null); // the node read in detail
 
   // Read the REAL persisted record (pure read, no model call). The fact counts
   // shown when the nodes float free come from here — nothing invented.
@@ -100,6 +122,11 @@ export default function LogsPhase({
       }),
     [],
   );
+
+  // the node opened for a verbatim read + its live count (facts only)
+  const openNode = openId ? (LOG_NODES.find((n) => n.id === openId) ?? null) : null;
+  const openStat = openNode ? FACT_STAT[openNode.id] : undefined;
+  const openCount = openStat ? countFor(openStat.kind) : null;
 
   return (
     <div className="ugraph">
@@ -165,8 +192,21 @@ export default function LogsPhase({
             transition={{ duration: 0.7, ease: EASE, delay: floated ? 0.15 + (i - 3) * 0.08 : 0 }}
           >
             <div
-              className={`upill ${isFact ? 'upill--fact' : ''} ${floated ? 'is-free upill--dim upill-bob' : ''}`}
-              style={floated ? ({ '--r': `${drift[i].r}deg` } as React.CSSProperties) : undefined}
+              className={`upill upill--tap ${isFact ? 'upill--fact' : ''} ${floated ? 'is-free upill--dim upill-bob' : ''}`}
+              style={{ cursor: 'pointer', ...(floated ? ({ '--r': `${drift[i].r}deg` } as React.CSSProperties) : {}) }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenId(n.id);
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setOpenId(n.id);
+                }
+              }}
+              aria-label={`read: ${n.label}`}
             >
               {n.label}
               {floated && (
@@ -174,6 +214,9 @@ export default function LogsPhase({
                   {count !== null ? `${count} ${stat?.noun ?? ''}` : 'objective'}
                 </span>
               )}
+              <span className="upill-open" aria-hidden>
+                ↗
+              </span>
             </div>
           </motion.div>
         );
@@ -220,11 +263,104 @@ export default function LogsPhase({
             transition={{ duration: 0.3 }}
           >
             {connected
-              ? 'the blue thread is what you said · the floating ones are what the record shows · see report →'
-              : 'connect the dots'}
+              ? 'blue thread = what you said · floating = what the record shows · tap any node · see report →'
+              : 'connect the dots · or tap any node to read it'}
           </motion.span>
         </AnimatePresence>
       </div>
+
+      {/* a clicked node BLOOMS OPEN to its verbatim source — the journal words (fact)
+          vs the minimized version said out loud (story) + the counted record. Same
+          open-morph feel as the report. Scrim-click or × closes. */}
+      <AnimatePresence>
+        {openNode && (
+          <motion.div
+            className="fixed inset-0 z-[60] flex items-center justify-center p-5"
+            style={{ background: 'rgba(11,22,32,0.34)', backdropFilter: 'blur(7px)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setOpenId(null)}
+          >
+            <motion.div
+              key={openNode.id}
+              className="w-full max-w-[440px] rounded-[22px] bg-page p-7 shadow-ring-lg"
+              variants={PANEL_MORPH}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* the tag (which truth) + close */}
+              <motion.div variants={ROW_REVEAL} className="flex items-center justify-between gap-4">
+                <span
+                  className="rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.08em]"
+                  style={
+                    openNode.kind === 'fact'
+                      ? { background: 'var(--blue-tint)', color: 'var(--blue-ink)' }
+                      : { background: 'rgba(11,22,32,0.05)', color: 'var(--ink-50)' }
+                  }
+                >
+                  {openNode.kind === 'fact' ? 'what the record shows' : 'what you said out loud'}
+                </span>
+                <button
+                  onClick={() => setOpenId(null)}
+                  className="shrink-0 font-mono text-[18px] leading-none text-ink-35"
+                  aria-label="close"
+                >
+                  ×
+                </button>
+              </motion.div>
+
+              {/* the verbatim — the actual words */}
+              <motion.blockquote
+                variants={ROW_REVEAL}
+                className="mt-4 text-[17px] leading-[26px]"
+                style={{ fontWeight: 450, color: openNode.kind === 'fact' ? 'var(--ink-90)' : 'var(--ink-70)' }}
+              >
+                &ldquo;{openNode.quote}&rdquo;
+              </motion.blockquote>
+
+              {/* fact → the counted record + live count; story → what it minimizes */}
+              {openNode.kind === 'fact' ? (
+                <>
+                  {openNode.record && (
+                    <motion.div variants={ROW_REVEAL} className="mt-4 rounded-[14px] bg-raised p-4 shadow-ring">
+                      <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-35">
+                        objective record
+                      </div>
+                      <p className="text-[13.5px] leading-relaxed text-ink-70">{openNode.record}</p>
+                    </motion.div>
+                  )}
+                  <motion.div variants={ROW_REVEAL} className="mt-3 flex flex-wrap items-center gap-2">
+                    {openCount !== null && (
+                      <span className="rounded-full bg-blue-tint px-3 py-1.5 font-mono text-[11px] tracking-wide text-blue-ink">
+                        {openCount} {openStat?.noun ?? 'logged this week'}
+                      </span>
+                    )}
+                    <span className="font-mono text-[10px] lowercase tracking-wide text-blue-ink">
+                      objective · → provider
+                    </span>
+                  </motion.div>
+                </>
+              ) : (
+                <motion.div variants={ROW_REVEAL} className="mt-4 rounded-[14px] bg-raised p-4 shadow-ring">
+                  <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-35">
+                    what it leaves out
+                  </div>
+                  <p className="text-[13.5px] leading-relaxed text-ink-70">{openNode.detail}</p>
+                </motion.div>
+              )}
+
+              <motion.div variants={ROW_REVEAL} className="mt-5 font-mono text-[10px] lowercase text-ink-35">
+                {openNode.kind === 'fact'
+                  ? 'the words you actually wrote — counted, not interpreted.'
+                  : 'the version told out loud — lighter than the record.'}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
