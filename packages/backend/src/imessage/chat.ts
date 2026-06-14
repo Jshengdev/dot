@@ -61,7 +61,7 @@ export function routeMode(text: string): ChatMode {
   return 'reflect';
 }
 
-// ── Voice gates (prompt wisdom lifted from doubles — no extra machinery) ──────
+// ── Voice gates (no extra machinery) ─────────────────────────────────────────
 // (1) clinical / AI "tells" that break the warm-friend voice → caught + rewritten
 //     ONCE. Skipped in crisis mode, where care language ("988", "i'm here") is right.
 const TELLS = [

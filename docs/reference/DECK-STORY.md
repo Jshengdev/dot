@@ -1,7 +1,7 @@
 # DECK-STORY — the resonant problem, in Johnny's voice. The soul of the pitch.
 
 > Primary founder-voice material + the crystallized anchors. Use this to write the deck. Preserve the voice; the
-> humanizer pass comes last. Pairs with `MISSION-VERBATIM.md`, `DEMO-SCRIPT.md`, `PORT-SAYHELLO-STORY.md`.
+> humanizer pass comes last. Pairs with `MISSION-VERBATIM.md`, `DEMO-SCRIPT.md`, and the demo-story craft notes.
 
 ## Verbatim (Johnny, 2026-06-13) — how he wants the problem to resonate
 > "the way that i want the problem to really resonate is by the experience that you want help and when you see it

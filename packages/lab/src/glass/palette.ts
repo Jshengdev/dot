@@ -1,4 +1,4 @@
-// Clean-blue retint of the slot-10 reel palette. Same STRUCTURE (studio neutrals +
+// Clean-blue retint of the reel palette. Same STRUCTURE (studio neutrals +
 // one accent that fires on the ACTIVATE beat only), values swapped: dark→white room,
 // magenta/amber→trust-blue. Glass stays clear; the accent is the only hue.
 export const PALETTE = {

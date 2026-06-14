@@ -1,5 +1,4 @@
-// palette.ts — clean-blue retint of the glass-reel palette (ported from
-// packages/lab/src/glass/palette.ts, source untouched). Studio neutrals + one
+// palette.ts — clean-blue retint of the glass-reel palette. Studio neutrals + one
 // accent that fires on the ACTIVATE beat only. Glass stays clear; the accent is
 // the only hue. Matches design/tokens.css brand-clean-blue (#007AFF).
 export const PALETTE = {

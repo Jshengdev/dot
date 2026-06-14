@@ -18,7 +18,7 @@ safe) → **resolution** (you walk in seen).
 
 ## The test for every beat (cut if it fails either)
 1. Does it **ground in a real truth** (research / lived / sourced)? 2. Does it make the **next beat inevitable**?
-If a beat is just "nice," it's noise — cut it. (sayhello rule: every beat grounds in a signal or it gets cut.)
+If a beat is just "nice," it's noise — cut it. (house rule: every beat grounds in a signal or it gets cut.)
 
 ---
 
@@ -68,7 +68,7 @@ If a beat is just "nice," it's noise — cut it. (sayhello rule: every beat grou
 - **Lines:** "it shows you the gap… lets **you** decide… **machines prove. you mean.**"
 - **Communicates:** *It works — and it does it the right way: facts, not a verdict; you decide.*
 - **Train of thought:** Claim → proof. Show the real reflection. "Lets you decide" is the safety + agency proof in one. "Machines prove; you mean" seals it philosophically.
-- **Relevant because:** The live demo; the validate-not-invalidate line (the knife-edge); the SOTARE doctrine. This is the beat the judge remembers — it gets all the polish.
+- **Relevant because:** The live demo; the validate-not-invalidate line (the knife-edge); the "machines prove" doctrine. This is the beat the judge remembers — it gets all the polish.
 
 ## Beat 9 — THE PAYOFF (agency — end on the patient)
 - **Lines:** "you draft your own story… you don't have to **perform your pain to be believed**… you walk in already **seen**."

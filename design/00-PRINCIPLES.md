@@ -23,7 +23,7 @@ Every surface is modeled by a stack: `1px white inset ring` (top-lip highlight) 
 Pick one warm near-black (`#262323`, never `#000`). Every text tone, hairline, and divider is that ink at a different alpha. No `#888`, no `#ccc`, no second gray. Importance is a step in alpha, never a new color. **WHY:** the discipline is the look — gray-on-gray everywhere makes the rationed color *mean* something.
 
 ### Law 3 — Exactly one accent, reserved for the single live/active thing.
-In `sayhello`, violet `#6e2bff` appears ONLY on the currently-executing node. Color is information, not decoration. Never as a large fill. **WHY:** "if everything is colored, nothing is alive." The one accent is the eye's anchor — it says *this is happening right now*.
+In the original product, violet `#6e2bff` appears ONLY on the currently-executing node. Color is information, not decoration. Never as a large fill. **WHY:** "if everything is colored, nothing is alive." The one accent is the eye's anchor — it says *this is happening right now*.
 
 ### Law 4 — In-between font weights; never the loud stops.
 Body is `430` (not 400), emphasis is `480` (not 600), big numerals are `340`. The default 400/600 stops are banned — they are what makes type look like a default webpage. Headings rely on **SIZE, not weight**. **WHY:** the half-steps make type feel *set by a hand*, not styled by a stylesheet. Emphasis is one quiet step (430→480), not a jump.

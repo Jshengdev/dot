@@ -11,7 +11,7 @@ const PANELS: Panel[] = [
     id: 'glass-dot',
     eyebrow: 'asset 01 · hero',
     title: 'the glass dot',
-    note: 'A liquid metaball orb wearing the transmission skin — wet chrome, lit by studio streaks. It breathes; a droplet of the same liquid sags toward your cursor and merges; pressing it ignites a blue core that blooms. Ported from the slot-10 liquid-chrome reel, retinted to clean-blue.',
+    note: 'A liquid metaball orb wearing the transmission skin — wet chrome, lit by studio streaks. It breathes; a droplet of the same liquid sags toward your cursor and merges; pressing it ignites a blue core that blooms. Retinted to clean-blue.',
     render: () => <GlassDot />,
   },
   {

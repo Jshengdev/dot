@@ -1,6 +1,6 @@
 # Johnny's Taste Library
 
-A portable, reimplementation-grade design language. This is not a brand guide for one product — it is the **physics** of Johnny's identity, extracted from the proven `said-built` cofounder grammar, the `vortex-ui` token canon, and the shipped `sayhello` product, so that any new product can be built in his voice from exact values.
+A portable, reimplementation-grade design language. This is not a brand guide for one product — it is the **physics** of Johnny's identity, extracted from his proven cofounder grammar, his token canon, and his shipped products, so that any new product can be built in his voice from exact values.
 
 Everything here is a recipe, not a vibe. Hex, rem, px, cubic-beziers, box-shadow stacks, font weights, ms, keyframes, prop shapes, DOM structure — all quoted at the fidelity an engineer can paste and ship.
 
@@ -19,7 +19,7 @@ Everything here is a recipe, not a vibe. Hex, rem, px, cubic-beziers, box-shadow
 A set of decision-frozen documents + one compiling CSS sheet. The **neutral + light-depth + ink-alpha + motion** foundation is the most portable layer: it survives any rebrand. Swap a single accent token and you have a new brand in one line. Everything composes upward from that bedrock — tokens → motion → components → flow.
 
 The library carries **two living skins**:
-1. **Paper-light (original):** warm gray world, warm ink `#262323`, violet `--live`, ocean brand-blue. The proven `sayhello` grammar.
+1. **Paper-light (original):** warm gray world, warm ink `#262323`, violet `--live`, ocean brand-blue. The proven original grammar.
 2. **Clean-blue (new):** clinical-clean-white world, cool ink `#0b1620`, trust-blue `#007AFF`, iMessage bubbles as the primary surface — a healthcare brand that deliberately refuses to look like healthcare. See [05-NEW-BRAND.md](./05-NEW-BRAND.md).
 
 Both skins run on the **same physics**: depth-from-light, one-ink-alpha-ladder, one-accent law, mono-system-voice, the single signature ease, ≤1 whimsy per surface.

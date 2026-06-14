@@ -103,5 +103,5 @@ Seed a believable 7-day record so the catastrophe-delta has real rows to query:
 - `self_harm_behavior` (arm-scratching during meetings) — flagged, routed to safety, NOT counter-evidenced.
 - `club_event` markers (the trigger context: "after every club event").
 
-`source='synthetic'`, open `kind` vocabulary, idempotent seed (see `PORT-MEMORY-DB.md` §4). The narrative is
+`source='synthetic'`, open `kind` vocabulary, idempotent seed (see the memory-DB design notes §4). The narrative is
 real; the counts are seeded for the demo.

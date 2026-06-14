@@ -6,7 +6,7 @@
 > **Johnny:** this is the ONE place you write down what DOT actually does. The repo's structure, design
 > system, and build engine are already set up and waiting. The product idea is the only missing piece — fill
 > the six blanks below and DOT goes from "scaffolded" to "ready to build." Keep each answer tight; crystal
-> clarity beats length. (This mirrors how `sayhello` locked its scope before a line of code was written.)
+> clarity beats length. (This mirrors how a past product locked its scope before a line of code was written.)
 
 ---
 
@@ -28,7 +28,7 @@
 > ⏳ MISSION TODO (Johnny fills): _______________________________________________
 
 ### 4. The hero / "catch" demo moment
-*The single beat the judge remembers — the thing that happens live on screen that makes the product land. (In sayhello it was the harness catching the agent inventing a fact.) What's DOT's equivalent?*
+*The single beat the judge remembers — the thing that happens live on screen that makes the product land. (In a past product it was the harness catching the agent inventing a fact.) What's DOT's equivalent?*
 
 > ⏳ MISSION TODO (Johnny fills): _______________________________________________
 

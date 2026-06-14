@@ -10,7 +10,7 @@ import { LiquidGlass } from '../glass/materials/LiquidGlass'
 import { expDamp } from '../glass/sim/damp'
 import { PALETTE } from '../glass/palette'
 
-// The jelly slider (ported from slot-10, retinted clean-blue). The fill is a liquid
+// The jelly slider, retinted clean-blue. The fill is a liquid
 // mass whose head follows the drag with a LAGGED LERP (lag, not spring) while the
 // trailing body balls follow at slower rates — fast drags stretch the mass into a
 // neck that pinches off, all emergent from the metaball field. A BLUE strip light

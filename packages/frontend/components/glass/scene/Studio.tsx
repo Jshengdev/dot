@@ -4,8 +4,7 @@ import { Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 import { PALETTE } from '../palette';
 
-// The studio that makes glass read as WET CHROME (ported from
-// packages/lab/src/glass/scene/Studio.tsx, source untouched). Long thin strip
+// The studio that makes glass read as WET CHROME. Long thin strip
 // lights become the streak highlights along every curved silhouette; a cool light
 // room with a soft vertical gradient backdrop gives the clear glass something to
 // refract. No fog, no vignette, no grain.

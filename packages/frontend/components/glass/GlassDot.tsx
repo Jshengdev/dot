@@ -10,8 +10,7 @@ import { expDamp } from './sim/damp';
 import { PALETTE } from './palette';
 
 // The glass dot — DOT's HERO, as a LIQUID metaball orb wearing the transmission
-// skin (ported from packages/lab/src/panels/GlassDot.tsx, source untouched). It
-// breathes; a droplet of the same liquid sags toward your cursor and merges
+// skin. It breathes; a droplet of the same liquid sags toward your cursor and merges
 // (stretching a neck); pressing it ignites a blue core that blooms (the activate
 // beat). This is the live, procedural shader — the hero of the reflection surface.
 //

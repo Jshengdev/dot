@@ -1,6 +1,6 @@
 # DEMO-SCRIPT — the judge-facing 3 minutes (= the demo path). Polish lives HERE and nowhere else.
 
-> Structure ported from sayhello (problem → human truth → the catch → why-different → tagline). The "catch" gets the
+> Structure follows a proven demo arc (problem → human truth → the catch → why-different → tagline). The "catch" gets the
 > most polish of anything in the repo — slow down there. Hero condition = anxiety (founder-fit). 3 min live + 2 min Q&A.
 
 ## One-breath pitch (matches SCOPE-LOCK success-test)

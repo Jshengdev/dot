@@ -3,8 +3,7 @@ import { createContext, useContext, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// A pointer in WORLD space on the interaction plane (ported from
-// packages/lab/src/glass/interaction/pointer.tsx, source untouched). One instance
+// A pointer in WORLD space on the interaction plane. One instance
 // PER canvas (provided by <GlassScene>) so the cursor never leaks. Components read
 // these refs in useFrame via usePointer() — never React state (the reel's hard rule).
 export type Pointer = { pos: THREE.Vector3; smooth: THREE.Vector3; down: boolean; has: boolean };

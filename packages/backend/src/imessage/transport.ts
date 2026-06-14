@@ -1,6 +1,6 @@
 // transport.ts — the iMessage delivery layer. Thin wrapper over
-// @photon-ai/advanced-imessage-kit, lifted from doubles/src/spectrum/imessage.ts
-// and adapted for DOT: self-contained env load, console logger, + replyToGuid
+// @photon-ai/advanced-imessage-kit, adapted for DOT: self-contained env load,
+// console logger, + replyToGuid
 // (quote-reply) support for the "reply when they're spamming" effect, + reconnect.
 //
 // FAIL LOUD: missing env throws at load; connect failure throws. No silent retry.

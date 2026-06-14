@@ -1,7 +1,7 @@
 # STORY 1.1 — DOT demo golden-path run-through
 
 **Status:** ready-for-dev · **Source:** `reference/SUCCESS-SCENARIO.md` + `USER-JOURNEY.md` + `SCOPE-LOCK.md` +
-`reference/SKELETON-SPEC.md` + `reference/PORT-MEMORY-DB.md` + `KEYS.md` + `STORY-FINAL.md`.
+`reference/SKELETON-SPEC.md` + the memory-DB design notes + `KEYS.md` + `STORY-FINAL.md`.
 
 > ### 📋 REVIEW — shaped by Claude toward "minimal, works-e2e-on-sample, the split is real."
 > Lines marked **⚠️ NEEDS JOHNNY** are the only ones requiring your judgment. Everything else I've simplified toward
@@ -62,7 +62,7 @@ ingest (chunk the story) → extract (threads/graph) → classify:TWO-TRUTHS (ob
 > 💬 **R: ⚠️ NEEDS JOHNNY** — run the split on the real sample story and read the delta + validation **out loud**: does it validate the feeling and never invalidate? This is the one thing only *you* can sign off.
 
 - **Contracts:** `Story { id,userId,transcript,subjective[],objective[],delta,timeline?,createdAt }` · `Event { …,source:'story'|'synthetic',ts }`.
-- **Memory (`PORT-MEMORY-DB.md`):** `users · messages · stories · events · stat_sheet(view)`; in-proc Map → SQLite; counter-evidence = a windowed `COUNT`; ONE `Connector` (`SyntheticConnector` now).
+- **Memory (memory-DB design notes):** `users · messages · stories · events · stat_sheet(view)`; in-proc Map → SQLite; counter-evidence = a windowed `COUNT`; ONE `Connector` (`SyntheticConnector` now).
 - **File structure:** engine in `packages/backend`; sample frontend in `packages/sample`. Don't scaffold twice.
 - **Build order:** `BUILDER-START.md` L0→L6, each a LIVE gate. **Discipline:** build simply, no silent stubs, demo-path-sacred.
 > 💬 **R:** `Story{subjective[],objective[],delta}` is exactly what AC#5/#6 render — coherent. For sample data: hand-author one `sampleStory.json` in this shape; the **real split overwrites** subjective/objective/delta at runtime. Don't over-build the store — in-proc Map is fine for the demo.
@@ -77,7 +77,7 @@ ingest (chunk the story) → extract (threads/graph) → classify:TWO-TRUTHS (ob
 
 ## Project context references
 `SCOPE-LOCK.md` · `reference/SUCCESS-SCENARIO.md` · `USER-JOURNEY.md` · `reference/SKELETON-SPEC.md` ·
-`reference/PORT-MEMORY-DB.md` · `KEYS.md` · `STORY-FINAL.md` · `DEMO-SCRIPT.md` · `reference/PROVIDER-REPORT.md`.
+the memory-DB design notes · `KEYS.md` · `STORY-FINAL.md` · `DEMO-SCRIPT.md` · `reference/PROVIDER-REPORT.md`.
 
 ## Open questions
 > 💬 **R:** Resolved toward simplicity: **voice = optional · input = sample transcript (paste) · risk + check-ins = visual layers, not required for e2e.** ⚠️ The only things that need **YOU**: (1) the **sample STORY content**, (2) the **tone check**, (3) is the demo subject **your own story** or a synthetic persona.

@@ -213,7 +213,7 @@ gsap.from(path, {
 @keyframes wire-march { to { stroke-dashoffset: -16; } }
 .wire-march { stroke: var(--ocean); stroke-dasharray: 4 4; animation: wire-march 0.9s linear infinite; }
 ```
-(In `sayhello` the regen edge is tinted ocean-blue, not violet — the brand color carries the wire, the accent stays on the live node.)
+(In the original product the regen edge is tinted ocean-blue, not violet — the brand color carries the wire, the accent stays on the live node.)
 
 ### 3n. PACKET DOTS — traveling along a wire (flow witnessed, not implied)
 SMIL version (org-canvas): 3.2px `<rect fill=#37a4f4>` with

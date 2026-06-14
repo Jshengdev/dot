@@ -6,8 +6,7 @@ import * as THREE from 'three';
 
 export type Ball = { x: number; y: number; z: number; s: number };
 
-// The metaball engine (ported from packages/lab/src/glass/components/LiquidBody.tsx,
-// source untouched). One isosurface per liquid body; ball positions are LOCAL
+// The metaball engine. One isosurface per liquid body; ball positions are LOCAL
 // [-1,1]^3. The field's smooth falloff buys the merge, the stretching neck and the
 // pinch-off for free — you author balls, the field authors the liquid. Driven
 // imperatively per frame.

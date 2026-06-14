@@ -4,8 +4,7 @@ import { Studio } from './Studio';
 import { PostFX } from '../post/PostFX';
 import { PointerField, PointerCtx, makePointer } from '../interaction/pointer';
 
-// The shared glass scene wrapper (ported from packages/lab/src/glass/scene/GlassScene.tsx,
-// source untouched): a fresh per-canvas pointer, the studio lighting, the
+// The shared glass scene wrapper: a fresh per-canvas pointer, the studio lighting, the
 // interaction plane, and selective bloom. A panel does:
 //   <Canvas><GlassScene><MyComponent/></GlassScene></Canvas>.
 export function GlassScene({

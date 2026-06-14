@@ -2,7 +2,7 @@
   "name": "@dot/frontend",
   "version": "0.0.0",
   "private": true,
-  "description": "DOT conversation surface — the clean-blue thread + the glass-dot reflection. Runs the real Grok reflection from @dot/backend; the glass dot is the hero (R3F liquid-glass, ported from packages/lab).",
+  "description": "DOT conversation surface — the clean-blue thread + the glass-dot reflection. Runs the real Grok reflection from @dot/backend; the glass dot is the hero (R3F liquid-glass).",
   "scripts": {
     "dev": "next dev -p 5170",
     "build": "next build",

@@ -1,8 +1,7 @@
 'use client';
 import { MeshTransmissionMaterial } from '@react-three/drei';
 
-// transmission-glass — the liquid-chrome skin (ported from
-// packages/lab/src/glass/materials/LiquidGlass.tsx). The lab tuned these via a leva
+// transmission-glass — the liquid-chrome skin. The lab tuned these via a leva
 // folder; leva is a dev-only tuning overlay, so here the values are FROZEN to the
 // lab's tuned defaults (the production surface carries no dev panel). `distortion`
 // is the domain-warp primitive living INSIDE the material: the refraction field

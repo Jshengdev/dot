@@ -2,7 +2,7 @@
 
 The exact palette, depth recipes, type, spacing, and radii. Every value is reimplementation-grade. The compiling sheet is [tokens.css](./tokens.css); the *why* is in [00-PRINCIPLES.md](./00-PRINCIPLES.md); the components that consume these are in [03-COMPONENTS.md](./03-COMPONENTS.md).
 
-**Two skins, one structure.** This doc leads with the **paper-light original** (warm gray, violet accent, ocean brand-blue — the proven `sayhello` grammar). The **clean-blue adaptation path** is noted inline at each token group and built out fully in [05-NEW-BRAND.md](./05-NEW-BRAND.md). The *structure* (grounds ladder, ink alpha ladder, one-accent, depth recipes, radii rhythm) never changes; only the values do.
+**Two skins, one structure.** This doc leads with the **paper-light original** (warm gray, violet accent, ocean brand-blue — the proven original grammar). The **clean-blue adaptation path** is noted inline at each token group and built out fully in [05-NEW-BRAND.md](./05-NEW-BRAND.md). The *structure* (grounds ladder, ink alpha ladder, one-accent, depth recipes, radii rhythm) never changes; only the values do.
 
 > **Naming convention note.** The proven canon used namespaced vars (`--ui-*`, `--vx-*`, `--lab-*`). The shipped product collapsed these to clean unprefixed product names (`--page`, `--ink-90`, `--live`) bridged to Tailwind via `extend.colors`. **Carry the unprefixed naming forward** — never let a component author pick a raw hex; they pick a *role*.
 

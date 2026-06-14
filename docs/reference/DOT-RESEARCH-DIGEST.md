@@ -66,7 +66,7 @@ the cracks of a fragmented system that *missed* them. That shared wound is the e
 
 ## 3. The AI good / bad line (the honesty layer)
 
-DOT's safety mechanism IS its doctrine, drawn from SOTARE + CBT + APA red lines:
+DOT's safety mechanism IS its doctrine, drawn from the "machines prove" principle + CBT + APA red lines:
 
 - **"Machines PROVE; humans MEAN."** DOT proves the objective facts; the human extracts the meaning.
   DOT stays on the *prove* side (reflect facts) and never crosses to *mean* (no diagnosis, no verdict,

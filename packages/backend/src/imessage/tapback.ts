@@ -1,5 +1,5 @@
 // tapback.ts — detect an iMessage reaction (tapback) from a raw SDK inbound.
-// Lifted from doubles/src/conversation/tapback.ts (DETECTION only — no DB write).
+// tapback detection only — no DB write.
 // A tapback is SIGNAL, not a text turn; the agent routes on the `tapback` field
 // so a "Liked an image" reaction is never fed to the model as garbage text.
 

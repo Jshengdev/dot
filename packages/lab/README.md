@@ -12,8 +12,8 @@ npm run dev                         # → http://localhost:5180
 
 ## What's here — Liquid Chrome UI, in clean-blue
 
-The glass system is ported from `port-orchestration/reel-replicas/slot-10` (the liquid-chrome reel) and
-retinted white + trust-blue. A scrolling gallery, each panel an isolated glass asset, hot-reloading as we tune.
+The glass system is a liquid-chrome surface retinted white + trust-blue. A scrolling gallery, each panel an
+isolated glass asset, hot-reloading as we tune.
 
 | Panel | What it is | Interaction |
 |---|---|---|
@@ -38,8 +38,8 @@ retinted white + trust-blue. A scrolling gallery, each panel an isolated glass a
 ## Verifying glass renders (important)
 
 `MeshTransmissionMaterial` needs a real GPU. **Headless Chromium renders it wrong** (software WebGL → you see
-only the inner core, not the glass). Capture with a real GPU — `headless: false` (see the reel's
-`prototype-lab/capture-three.mjs` pattern). In a normal browser at `localhost:5180` it renders correctly.
+only the inner core, not the glass). Capture with a real GPU — `headless: false` (see the
+`capture-three.mjs` pattern). In a normal browser at `localhost:5180` it renders correctly.
 
 ## On-brand, no drift
 

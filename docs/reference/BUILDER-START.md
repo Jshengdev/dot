@@ -2,7 +2,7 @@
 
 > How the build begins. Get **the big one** (the minimal end-to-end loop) running first, proving every seam; then
 > loop workflows/objectives on top, each as a new layer with its OWN gate. Nothing advances until its gate is green.
-> Pairs with `SKELETON-SPEC.md` (the WHAT) — this is the ORDER + the VERIFY. Discipline: `PORT-SOTARE-CONSTRAINTS.md`.
+> Pairs with `SKELETON-SPEC.md` (the WHAT) — this is the ORDER + the VERIFY. Discipline: the build-constraints notes.
 
 ## "The big one" (build this first, everything else loops on it)
 **Synthetic story in → Grok splits objective from subjective → store it → reflect the delta against seeded events

@@ -15,7 +15,7 @@
 | `XAI_API_KEY` | all Grok calls (text / image / TTS / realtime voice) | `dot/.env` | ✅ **present + verified live** |
 | `INNGEST_EVENT_KEY` | director loop (Cloud) | Inngest dashboard | ⏳ needed (dev server works keyless) |
 | `INNGEST_SIGNING_KEY` | Inngest serve handler (Cloud) | Inngest dashboard | ⏳ needed (Cloud only) |
-| `IMESSAGE_SERVER_URL` / `IMESSAGE_API_KEY` | iMessage connector (Photon) | copied from `~/code/doubles/.env` (+ `USER_PHONE`/`AGENT_PHONE`) | ✅ **present in `dot/.env`** |
+| `IMESSAGE_SERVER_URL` / `IMESSAGE_API_KEY` | iMessage connector (Photon) | copied from an existing local `.env` (+ `USER_PHONE`/`AGENT_PHONE`) | ✅ **present in `dot/.env`** |
 | `DATABASE_URL` | store (only if SQLite→Postgres) | local SQLite needs none | optional |
 | `MOCK_*` | dev-only mocks (env-gated) | local only | convention locked |
 
@@ -35,5 +35,5 @@ Base URL `https://api.x.ai/v1` · Auth `Bearer $XAI_API_KEY`.
 
 ## Reuse (don't regenerate under the clock)
 - `XAI_API_KEY` — already in `dot/.env`. ✅
-- **iMessage + Inngest keys:** if they already exist in another repo's `.env` (Doubles, or HANA `apps/hana/.env`),
+- **iMessage + Inngest keys:** if they already exist in another local repo's `.env`,
   name that file and I'll copy the values into `dot/.env` rather than re-provisioning. ⏳

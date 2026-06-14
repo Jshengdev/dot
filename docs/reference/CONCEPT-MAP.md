@@ -1,7 +1,7 @@
 # CONCEPT-MAP — Johnny's ideas × the research × how people actually behave
 
 > Every concept Johnny voiced, mapped to the research grounding (source) + the real interaction behavior it has to
-> respect. This is the deck's evidence backbone — sayhello rule: *every beat grounds in a signal or it gets cut.*
+> respect. This is the deck's evidence backbone — house rule: *every beat grounds in a signal or it gets cut.*
 > Sources: `DECK-STORY.md`, `MISSION-VERBATIM.md`, `DOT-RESEARCH-DIGEST.md`, `AI-GOOD-VS-BAD.md` (in next/reference),
 > `INTAKE-QUESTIONS.md`, `PROVIDER-REPORT.md`, `next/docs/{PROBLEM-SPACE,LANDSCAPE-GAPS,design-thinking-2026-06-13}.md`,
 > `next/reference/VISION-DOT.md`.
@@ -42,7 +42,7 @@
 |---|---|---|---|
 | **"Perspective is the most valuable thing — reflect your life back"** | The objective-mirror gap is *empty*: Mindsera has narrative/no-data, Exist has data/no-narrative — nobody pulls behavioral counter-evidence against a distortion. (VISION-DOT) | 70% use LLMs for "who am I / why am I here"; the spiral breaks on objective counter-evidence ("they texted you 50×"). | The deeper why + the defensible wedge. |
 | **"Give back more than they expected"** | Progressive disclosure; dystopian-good = value returned. (VISION-DOT) | They share data *when they see the return.* | The packaging principle. |
-| **"The honest mirror that doesn't lie to you"** | SOTARE (machines prove); anti-sycophancy is a *timely safety story* (2025-26 affirmation backlash). (AI-GOOD-VS-BAD) | AI gasses you up ("Claude more objective than your friends" — but also sycophantic). | The moat. |
+| **"The honest mirror that doesn't lie to you"** | "machines prove" doctrine; anti-sycophancy is a *timely safety story* (2025-26 affirmation backlash). (AI-GOOD-VS-BAD) | AI gasses you up ("Claude more objective than your friends" — but also sycophantic). | The moat. |
 
 ## Cluster F — ⭐ THE KEYSTONE: AI is not a replacement for human connection
 > Johnny's main concept to hold. Full sourced grounding in `AI-NOT-A-REPLACEMENT.md` (TC/Columbia + MIT + MHA).

@@ -1,4 +1,4 @@
-// batcher.ts — input batcher. Lifted from doubles/src/conversation/input-batcher.ts.
+// batcher.ts — input batcher.
 // Pure timing/debounce + rate-limit: when a user fires several texts fast, batch them
 // into ONE turn (don't reply to a half-finished thought); cap runaway spam. No LLM —
 // the semantic work happens after flush, in the dispatcher (chatReply).

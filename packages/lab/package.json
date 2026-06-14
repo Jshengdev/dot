@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "DOT visual lab — the experimental window where we hone glass UI assets in the locked clean-blue language. Glass system ported from port-orchestration/reel-replicas/slot-10.",
+  "description": "DOT visual lab — the experimental window where we hone glass UI assets in the locked clean-blue language.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -2,7 +2,7 @@
   "name": "@dot/flow-proto",
   "version": "0.0.0",
   "private": true,
-  "description": "DOT experiential flow — the imagined front-end run (enter → practice → check-ins → logs → summary). Standalone prototype, isolated from packages/frontend (the main build); combine later. Glass dot ported from packages/lab; Dot speaks via real Grok TTS.",
+  "description": "DOT experiential flow — the imagined front-end run (enter → practice → check-ins → logs → summary). Standalone prototype, isolated from packages/frontend (the main build); combine later. Dot speaks via real Grok TTS.",
   "scripts": {
     "dev": "next dev -p 5175",
     "build": "next build",

@@ -9,7 +9,7 @@
 > implementation to crib from, it's cited as `reference implementation: <path>` so a builder can go
 > look at working code — but the *shape described here is DOT's*. Build to the contracts in §8 exactly.
 >
-> **The discipline (from `PORT-SOTARE-CONSTRAINTS.md`).** Build the end-to-end skeleton on stubs FIRST,
+> **The discipline (from the build-constraints notes).** Build the end-to-end skeleton on stubs FIRST,
 > then make nodes smart. One clear purpose per primitive. "Done" = a run command + observed output.
 > If it writes or emits, prove the roundtrip. Satisfice, then stop. 9-hour clock — build the slice.
 
@@ -52,9 +52,8 @@ specific transport, model, or output channel; everything channel-specific (voice
 image-gen out) is a **plugin** that conforms to one interface. This is what makes the connectors
 modular: you add a connector by writing a plugin, not by editing the core.
 
-> Reference implementation of this exact architecture: `HANA/packages/core/src/mastra-builder.ts`
-> (the assembler), `HANA/packages/types/src/plugin.ts` (the interface), `HANA/ARCHITECTURE.md` (the
-> map). DOT's runtime is a slimmed version of the same spine.
+> A reference implementation of this exact architecture exists: a runtime assembler, the plugin
+> interface, and an architecture map. DOT's runtime is a slimmed version of the same spine.
 
 ### 2.1 The runtime builder — `createDot(config)`
 
@@ -71,7 +70,7 @@ One entry point assembles the whole runtime from a config object. It (in order):
 7. **Returns** `{ runtime, store, character, plugins, startMessaging() }`.
 
 ```ts
-// reference shape: HANA/packages/core/src/mastra-builder.ts  (createHana → createDot)
+// reference shape: a runtime assembler  (createX → createDot)
 export interface DotInstance {
   store: DotStore;                    // §5
   character: CharacterDefinition;     // §2.4
@@ -83,7 +82,7 @@ export async function createDot(config: DotConfig): Promise<DotInstance> { /* th
 ```
 
 ```ts
-// reference shape: HANA/packages/core/src/config.ts
+// reference shape: a runtime config module
 export interface DotConfig {
   character: CharacterDefinition;
   models?: {
@@ -108,7 +107,7 @@ drop the spontaneous/scheduler/CLI/observability surface for the 9-hour build; k
 the messaging provider, world info, and lifecycle hooks.)
 
 ```ts
-// reference implementation (full): HANA/packages/types/src/plugin.ts  (ToolPlugin)
+// reference implementation (full): a plugin types module  (ToolPlugin)
 // DOT's trimmed Plugin contract:
 
 export interface Plugin {
@@ -158,7 +157,7 @@ export interface PluginContext {
 Registration is a list in the app config — declarative, ordered. `createDot()` does the wiring.
 
 ```ts
-// reference shape: HANA/apps/hana/hana.config.ts
+// reference shape: an app config file
 import { defineConfig } from '@dot/core';
 import dotCharacter from '@dot/character';
 import voice    from '@dot/plugin-voice';      // Grok Voice entry        (§3 / §7a)
@@ -182,7 +181,7 @@ Agent files never hard-code a model. They call a resolver with three-level prece
 can override per-process without touching code.
 
 ```ts
-// reference implementation: HANA/packages/core/src/model-config.ts
+// reference implementation: a model-config module
 let current: ModelOverrides = {};
 export function setModelConfig(m: ModelOverrides | undefined) { current = m ?? {}; }
 
@@ -201,8 +200,8 @@ mirror's `systemPrompt` — the validate-first / never-invalidate / prove-not-me
 `DOT-RESEARCH-DIGEST.md` §3), and `worldInfo` (crisis-handoff entry, attachment-handling entry).
 `createCharacter()` validates required fields at boot and throws listing every problem.
 
-> Reference: `HANA/packages/core/src/create-character.ts` (validation), `HANA/packages/types/src/character-definition.ts`
-> (the full interface — DOT uses a small subset).
+> Reference: a create-character module (validation) and a character-definition interface (the full
+> interface — DOT uses a small subset).
 
 ---
 
@@ -214,9 +213,9 @@ Every input is a plugin exposing a `MessagingProvider` (for a two-way channel) a
 ### 3.1 The `MessagingProvider` interface (the transport contract)
 
 ```ts
-// reference implementation: HANA/packages/types/src/plugin.ts (MessagingProvider)
-//                           HANA/packages/plugins/imessage/src/index.ts (a concrete impl)
-//                           HANA/packages/plugins/spectrum/src/index.ts (a second, generic impl)
+// reference implementation: a plugin types module (MessagingProvider),
+//                           an iMessage plugin (a concrete impl),
+//                           a second, generic transport plugin
 export interface MessagingProvider {
   threadPrefix: string;                                   // memory scoping, e.g. "imessage" | "voice"
   connect(): Promise<void>;
@@ -250,11 +249,9 @@ why it lifts clean.
   pacing between them (`startTyping`/`stopTyping`). chatGuid = `iMessage;-;<phone>`.
 
 > Reference implementations to crib almost verbatim:
-> `HANA/packages/plugins/imessage/src/index.ts` (the plugin + provider),
-> `HANA/packages/plugins/imessage/src/services/imessage-gateway/gateway.ts` (the SDK wrapper — see
-> `handleIncomingSDK`: `isFromMe`/system-message drop, GUID via `message.guid`, attachment extraction),
-> `doubles/src/spectrum/imessage.ts` (the same transport with the GUID-dedup set spelled out),
-> `doubles/src/conversation/bubble-split.ts` (one reply string → 1–5 bubbles).
+> an iMessage plugin (the plugin + provider) and its SDK-wrapper gateway (see the incoming-SDK
+> handler: `isFromMe`/system-message drop, GUID via `message.guid`, attachment extraction).
+> The reference transport spells out the GUID-dedup set; a bubble-split helper turns one reply string into 1–5 bubbles.
 >
 > **Bubble pacing (empathy note):** a real person sends "hey" then "you up?" as two bubbles with a
 > beat between, not one essay. Bubble-split + an inter-message delay make DOT feel like a person, not a
@@ -275,7 +272,7 @@ for *objective data* that feeds the accumulated record. This is the one abstract
 data source" into a one-file change instead of a memory-layer rewrite.
 
 ```ts
-// the data-ingest chokepoint (from PORT-MEMORY-DB.md §4)
+// the data-ingest chokepoint (from the memory-DB design notes §4)
 export interface Connector {
   name: string;                                   // becomes events.source
   pull(userId: string, window: Window): Promise<Event[]>;   // Event shape in §8
@@ -312,12 +309,12 @@ inbound (voice or text)
 2. **What's-known-so-far** — the story being built / the relevant slice of the accumulated `events`
    record. For the 9-hour build this is a flat windowed read, not RRF (see §5, §10).
 
-> Reference implementations:
-> `doubles/src/orchestrator/index.ts` (runTurn spine — persist→context→model→persist),
-> `doubles/src/context/assembler.ts` (parallel fan-out of layers into one typed `ContextPacket`),
-> `doubles/src/llm/openrouter.ts` (the single fail-loud LLM gateway — keep the shape, point it at Grok).
+> Reference shapes to crib:
+> the runTurn spine (persist→context→model→persist),
+> a context assembler (parallel fan-out of layers into one typed `ContextPacket`),
+> a single fail-loud LLM gateway (keep the shape, point it at Grok).
 >
-> **Collapse note:** Doubles runs a 3-agent regen loop to dodge AI-detection. DOT does NOT — keep the
+> **Collapse note:** the reference orchestrator runs a 3-agent regen loop to dodge AI-detection. DOT does NOT — keep the
 > orchestrator skeleton, throw away the shape-picker / voice-critic / forbidden-phrase machinery. One
 > call. The "split fact from feeling" is the single reasoning job, prompted directly (§7b).
 >
@@ -374,11 +371,10 @@ documented fallback, not a silent stub), then **SQLite** (`better-sqlite3`, one 
 SQL ports straight from the reference. **Skip Postgres/Neon, skip embeddings** (a ~30 MB MiniLM
 download mid-demo earns nothing when reflecting against a handful of seeded events).
 
-> Reference implementations: `doubles/src/memory/schema.ts` + `connection.ts` (the `users`/`messages`
-> spine + the `query/execute/withTransaction` gateway), `doubles/src/context/layers/memory.ts` (the
-> retrieval function to retarget), `icarus/src/memory/entities.ts` (hash-dedup idea for `events` if you
-> want the same fact mentioned twice to *strengthen* rather than duplicate). Full design + cut list:
-> `PORT-MEMORY-DB.md`.
+> Reference shapes to crib: a memory `schema.ts` + `connection.ts` (the `users`/`messages`
+> spine + the `query/execute/withTransaction` gateway), a memory-layer retrieval function (to retarget),
+> and a hash-dedup idea for `events` (so the same fact mentioned twice *strengthens* rather than
+> duplicates). Full design + cut list lives in the memory-DB design notes.
 
 ---
 
@@ -511,7 +507,7 @@ return { dotImageUrl: img.url, dotImagePath: localPath };
 
 > Reference implementation (the tool shape, task/poll/download/return, and
 > `experimental_toToolResultContent` so the model can SEE the result):
-> `HANA/packages/plugins/image-gen/src/tool.ts` + `kusapics-client.ts`. DOT swaps Kusa.pics for Grok
+> an image-gen plugin's tool + its image-gen client. DOT swaps the image service for Grok
 > image-gen and the danbooru tags for the glass-dot prompt.
 
 > **⚑ NEEDS FROM JOHNNY — Grok image-gen.**
@@ -598,32 +594,32 @@ reference implementation lives.
 
 | Primitive | Purpose (one line) | Kind | Reference implementation |
 |---|---|---|---|
-| **Runtime builder** `createDot()` | Assemble the runtime from config + plugins + character. | primitive | `HANA/packages/core/src/mastra-builder.ts` |
-| **`Plugin` interface** | The modular connector/output contract every channel implements. | primitive | `HANA/packages/types/src/plugin.ts` |
-| **`defineConfig` / model-config** | Declarative app config; env>config>default model resolution. | primitive | `HANA/packages/core/src/config.ts`, `model-config.ts` |
-| **Character** | The one mirror persona (system prompt = the doctrine) + crisis world-info. | primitive | `HANA/packages/core/src/create-character.ts` |
-| **`MessagingProvider`** | Transport contract (send/receive/typing). | primitive | `HANA/packages/types/src/plugin.ts` |
-| **iMessage connector** | Photon transport: receive (isFromMe drop + GUID-dedup), send bubbles. | composed | `HANA/.../imessage/src/index.ts` + `gateway.ts`; `doubles/src/spectrum/imessage.ts` |
+| **Runtime builder** `createDot()` | Assemble the runtime from config + plugins + character. | primitive | a runtime assembler |
+| **`Plugin` interface** | The modular connector/output contract every channel implements. | primitive | a plugin types module |
+| **`defineConfig` / model-config** | Declarative app config; env>config>default model resolution. | primitive | a config + model-config module |
+| **Character** | The one mirror persona (system prompt = the doctrine) + crisis world-info. | primitive | a create-character module |
+| **`MessagingProvider`** | Transport contract (send/receive/typing). | primitive | a plugin types module |
+| **iMessage connector** | Photon transport: receive (isFromMe drop + GUID-dedup), send bubbles. | composed | an iMessage plugin + its gateway; reference transport |
 | **Voice connector** | Grok Voice realtime session → transcript → turn loop. | composed | (new; shape in §7a) |
-| **`Connector` (data ingest)** | The chokepoint for objective data into `events`; SyntheticConnector now. | primitive | `PORT-MEMORY-DB.md` §4 |
-| **Inbound batcher** | Debounce rapid bubbles into one turn (pure timing, no LLM). | primitive | `doubles/src/conversation/input-batcher.ts` |
-| **Bubble splitter** | One reply string → 1–5 human bubbles (pure functions). | primitive | `doubles/src/conversation/bubble-split.ts` |
-| **Turn orchestrator** `runTurn` | persist inbound → assemble context → ONE Grok call → persist outbound. | composed | `doubles/src/orchestrator/index.ts` |
-| **Context assembler** | Fan out ≤2 layers in parallel into one `ContextPacket`. | primitive | `doubles/src/context/assembler.ts` |
-| **LLM gateway** | One fail-loud Grok call wrapper (text + cost/latency, logs every call). | primitive | `doubles/src/llm/openrouter.ts` |
-| **DB substrate** | `users`/`messages`/`stories`/`events` + stat-sheet VIEW; Map→SQLite. | primitive | `doubles/src/memory/schema.ts` + `connection.ts` |
-| **Reflect/retrieval fn** | New subjective ⟷ windowed `COUNT(*)` over `events` → counter-evidence. | primitive | `doubles/src/context/layers/memory.ts` (retargeted) |
-| **Extractor (fact/feeling)** | Grok read → `{subjective, objective}` (reasoning high). | composed | `doubles/src/ingestion/extractors/life-synthesis.ts` (pattern) |
+| **`Connector` (data ingest)** | The chokepoint for objective data into `events`; SyntheticConnector now. | primitive | memory-DB design notes §4 |
+| **Inbound batcher** | Debounce rapid bubbles into one turn (pure timing, no LLM). | primitive | reference input-batcher |
+| **Bubble splitter** | One reply string → 1–5 human bubbles (pure functions). | primitive | reference bubble-split |
+| **Turn orchestrator** `runTurn` | persist inbound → assemble context → ONE Grok call → persist outbound. | composed | reference orchestrator |
+| **Context assembler** | Fan out ≤2 layers in parallel into one `ContextPacket`. | primitive | reference context assembler |
+| **LLM gateway** | One fail-loud Grok call wrapper (text + cost/latency, logs every call). | primitive | reference LLM gateway |
+| **DB substrate** | `users`/`messages`/`stories`/`events` + stat-sheet VIEW; Map→SQLite. | primitive | a reference memory `schema.ts` + `connection.ts` |
+| **Reflect/retrieval fn** | New subjective ⟷ windowed `COUNT(*)` over `events` → counter-evidence. | primitive | reference memory layer (retargeted) |
+| **Extractor (fact/feeling)** | Grok read → `{subjective, objective}` (reasoning high). | composed | reference life-synthesis extractor (pattern) |
 | **Director workflow** `dotRun` | Durable extract→classify→reflect→refine→finalize + human branch. | composed | (new; Inngest; shape in §6) |
-| **dot-render plugin** | Grok image-gen → glass dot → local path/URL. | composed | `HANA/.../image-gen/src/tool.ts` + `kusapics-client.ts` |
-| **Provider summary fn** | Read stat-sheet VIEW + recent stories → the syncable artifact. | composed | `PORT-MEMORY-DB.md` §3 |
+| **dot-render plugin** | Grok image-gen → glass dot → local path/URL. | composed | a reference image-gen tool + image-gen client |
+| **Provider summary fn** | Read stat-sheet VIEW + recent stories → the syncable artifact. | composed | memory-DB design notes §3 |
 | **Synthetic seeder** `seed.ts` | Pre-load a believable 7–21 day `events` history before the demo. | primitive | (new; §10) |
 
 ---
 
 ## 10. Build-simply guardrails (the satisfice rules)
 
-From `PORT-SOTARE-CONSTRAINTS.md`. Why each constraint exists matters as much as the rule.
+From the build-constraints notes. Why each constraint exists matters as much as the rule.
 
 - **One events table, open `kind` vocabulary.** No per-source tables, no SQL enum. *Why:* the whole
   "add a connector later" story is one chokepoint; a CHECK constraint would force a migration per source.
