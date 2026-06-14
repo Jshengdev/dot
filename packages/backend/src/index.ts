@@ -38,3 +38,30 @@ export type { Reflection, ReportSO, StatAggregate } from './run.js';
 // one inbound message → one live Grok call → grounded reflection, persisted.
 export { runTurn } from './turn.js';
 export type { TurnInput, TurnOutput, ContextPacket } from './turn.js';
+
+// ── The LIVE intake engine (the fully-conversational rebuild) ─────────────────
+// converse → self-close → knowledge-graph chunking → forward check-in plan →
+// real scheduler → live provider report. Everything below assembles from the
+// conversation alone (no seed, no scripts); proven headless by src/test-flow.ts.
+export { converseTurn, closeConversation } from './converse.js';
+export type { ConverseInput, ConverseResult, CloseInput, CloseResult } from './converse.js';
+export { updateGraph } from './graph.js';
+export type { UpdateGraphInput } from './graph.js';
+export { buildPlan } from './plan.js';
+export type { CheckInPlan, CheckInPlanItem } from './plan.js';
+export { buildLiveReport } from './report.js';
+export type { LiveReport, ReportCard } from './report.js';
+export { fireDueCheckIns, tick, startScheduler } from './scheduler.js';
+export type { FireInput, SchedulerHandle, SchedulerOptions } from './scheduler.js';
+export type {
+  Graph,
+  GraphNode,
+  GraphEdge,
+  NodeType,
+  EdgeType,
+  Panel,
+  ConversationMeta,
+  ConversationStatus,
+  CheckIn,
+  CheckInStatus,
+} from './types.js';
