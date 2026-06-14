@@ -9,7 +9,7 @@ const GLASS = {
   roughness: 0.06,
   thickness: 0.45,
   ior: 1.34,
-  chromaticAberration: 0.1,
+  chromaticAberration: 0, // no rainbow rim — clean-blue only (the pink fringe was the "border")
   anisotropicBlur: 0.2,
   distortion: 0.3,
   distortionScale: 0.5,
