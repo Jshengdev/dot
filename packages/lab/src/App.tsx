@@ -3,6 +3,7 @@ import { Leva } from 'leva';
 import GlassDot from './panels/GlassDot';
 import GlassSlider from './panels/GlassSlider';
 import GlassToggle from './panels/GlassToggle';
+import GlassSpiral from './panels/GlassSpiral';
 
 type Panel = { id: string; eyebrow: string; title: string; note: string; render: () => JSX.Element };
 
@@ -27,6 +28,13 @@ const PANELS: Panel[] = [
     title: 'the glass toggle',
     note: 'Click to flip. The knob slides on a lagged follow with a trailing droplet, so it stretches a short neck mid-slide then merges. Flipping on ignites the blue fill the glass refracts — the activate beat, the only place the accent fires.',
     render: () => <GlassToggle />,
+  },
+  {
+    id: 'glass-spiral',
+    eyebrow: 'asset 04 · the story spiral',
+    title: 'the story spiral',
+    note: "The story's pieces as flat glass slats, fanned around a void in a slow clean-blue spiral — the glass-torus reference, calmed and simplified (fewer slats, more air, a whisper of prismatic edge instead of full rainbow). Each slat is a 2D card living in 3D space; click one and it transforms out of the ring to face you, flat-on, while a clean card states it — 2D moving in 3D for focus. In the app the slats are the live knowledge-graph nodes; tune the shape in the 'spiral' panel.",
+    render: () => <GlassSpiral />,
   },
 ];
 
