@@ -49,6 +49,22 @@ export interface StatLine {
   window: string; // e.g. '7d'
 }
 
+/** One user's WHOLE slice, serialized — the durability unit. On serverless the
+ *  in-proc Map is a per-request working copy: a route restores this from the shared
+ *  store before the engine runs and snapshots it back after. Carries the id counters
+ *  so ids stay monotonic across instances. */
+export interface UserSnapshot {
+  user?: User;
+  messages: Message[];
+  stories: Story[];
+  events: Event[];
+  graphNodes: GraphNode[];
+  graphEdges: GraphEdge[];
+  conversation?: ConversationMeta;
+  checkins: CheckIn[];
+  counters: Record<string, number>;
+}
+
 // ── Query option shapes ───────────────────────────────────────────────────────
 
 export interface EventQuery {
@@ -375,6 +391,52 @@ class MapStore {
     const next: CheckIn = { ...existing, ...patch, id };
     this.checkins.set(id, next);
     return next;
+  }
+
+  // ── Durability seam: snapshot / restore one user's whole slice ───────────────
+  // The serverless boundary (see persistence.ts). snapshotUser exports everything
+  // for one user + the id counters; restoreUser WIPES the working copy and loads
+  // exactly that snapshot (each serverless request handles one user, so a clean
+  // per-request copy is correct and avoids cross-user id bleed in a warm instance).
+
+  /** Export one user's whole slice (+ the current id counters). */
+  snapshotUser(userId: string): UserSnapshot {
+    return {
+      user: this.users.get(userId),
+      messages: [...this.messages.values()].filter((m) => m.userId === userId),
+      stories: [...this.stories.values()].filter((s) => s.userId === userId),
+      events: [...this.events.values()].filter((e) => e.userId === userId),
+      graphNodes: [...this.nodeMapFor(userId).values()],
+      graphEdges: [...this.edgeMapFor(userId).values()],
+      conversation: this.conversations.get(userId),
+      checkins: [...this.checkins.values()].filter((c) => c.userId === userId),
+      counters: { ...this.counters },
+    };
+  }
+
+  /** Clear the working copy and load exactly one user's snapshot. Counters are
+   *  carried so freshly-minted ids continue monotonically for that user. */
+  restoreUser(userId: string, snap: UserSnapshot): void {
+    this.users.clear();
+    this.messages.clear();
+    this.stories.clear();
+    this.events.clear();
+    this.graphNodes.clear();
+    this.graphEdges.clear();
+    this.conversations.clear();
+    this.checkins.clear();
+
+    if (snap.user) this.users.set(snap.user.id, snap.user);
+    for (const m of snap.messages) this.messages.set(m.id, m);
+    for (const s of snap.stories) this.stories.set(s.id, s);
+    for (const e of snap.events) this.events.set(e.id, e);
+    const nm = this.nodeMapFor(userId);
+    for (const n of snap.graphNodes) nm.set(n.id, n);
+    const em = this.edgeMapFor(userId);
+    for (const e of snap.graphEdges) em.set(edgeKey(e), e);
+    if (snap.conversation) this.conversations.set(userId, snap.conversation);
+    for (const c of snap.checkins) this.checkins.set(c.id, c);
+    this.counters = { user: 0, msg: 0, story: 0, event: 0, checkin: 0, ...snap.counters };
   }
 }
 

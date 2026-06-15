@@ -1,11 +1,11 @@
 // app/api/scheduler/tick/route.ts — THE WALL-CLOCK TICK. ONE job: fire whatever
-// check-ins are due NOW. This is the real scheduled timer's heartbeat: a Vercel
-// cron (production) or the open panels page (the demo) hits this on an interval,
-// and any due check-in fires a real Grok message into the thread.
+// check-ins are due NOW for a user. The real scheduled timer's heartbeat: the open
+// panels page (the demo) or a cron hits this on an interval, and any due check-in
+// fires a real Grok message into the thread.
 //
-// Real time, not a button: tick reads the wall clock and fires store.getDueCheckIns
-// — with DOT_CHECKIN_SCALE compressing the plan's offsets, a check-in scheduled for
-// "tomorrow" comes due within the demo. Returns the check-ins that fired this tick.
+// Scoped to ?userId — it hydrates that user's slice from the shared store, fires
+// only their due check-ins (with DOT_CHECKIN_SCALE compressing the plan's offsets so
+// "tomorrow" comes due within the demo), then persists. No-op store calls locally.
 //
 // Fail loud: a model/store error returns a structured 500.
 
@@ -15,17 +15,25 @@ import { ensureEnv, nowIso } from '@/lib/server-env';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-async function fire() {
+async function fire(userId: string) {
   ensureEnv();
-  const { tick } = await import('@dot/backend');
+  const { tick, hydrate, persist } = await import('@dot/backend');
   const now = nowIso();
+  await hydrate(userId);
   const fired = await tick({ now });
+  // Persist only if something changed (a check-in flipped to 'sent').
+  if (fired.length > 0) await persist(userId);
   return { now, fired };
 }
 
-export async function GET() {
+function userIdFrom(request: Request): string {
+  const { searchParams } = new URL(request.url);
+  return (searchParams.get('userId') ?? 'demo').trim() || 'demo';
+}
+
+export async function GET(request: Request) {
   try {
-    return NextResponse.json(await fire());
+    return NextResponse.json(await fire(userIdFrom(request)));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[api/scheduler/tick] FAILED:', message);
@@ -33,5 +41,14 @@ export async function GET() {
   }
 }
 
-// POST behaves identically (a manual demo trigger / a cron that posts).
-export const POST = GET;
+export async function POST(request: Request) {
+  try {
+    const body = (await request.json().catch(() => ({}))) as { userId?: string };
+    const userId = (body.userId ?? userIdFrom(request)).trim() || 'demo';
+    return NextResponse.json(await fire(userId));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[api/scheduler/tick] FAILED:', message);
+    return NextResponse.json({ error: message, node: 'scheduler' }, { status: 500 });
+  }
+}

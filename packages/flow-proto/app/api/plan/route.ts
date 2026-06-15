@@ -11,10 +11,11 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     ensureEnv();
-    const { store } = await import('@dot/backend');
+    const { store, hydrate } = await import('@dot/backend');
     const { searchParams } = new URL(request.url);
     const userId = (searchParams.get('userId') ?? 'demo').trim() || 'demo';
 
+    await hydrate(userId); // load the user's slice from the shared store (no-op locally)
     const checkins = store.getCheckIns(userId);
     return NextResponse.json({ checkins });
   } catch (err) {

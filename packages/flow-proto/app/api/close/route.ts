@@ -22,9 +22,11 @@ export async function POST(request: Request) {
     const userId = (body.userId ?? 'demo').trim() || 'demo';
 
     ensureEnv();
-    const { updateGraph, closeConversation, buildPlan, store } = await import('@dot/backend');
+    const { updateGraph, closeConversation, buildPlan, store, hydrate, persist } =
+      await import('@dot/backend');
 
     const now = body.now ?? nowIso();
+    await hydrate(userId);
     if (!store.getUser(userId)) store.createUser({ id: userId, name: userId, createdAt: now });
 
     // 1. final chunk (catch anything since the last turn), 2. DOT's two-truths close,
@@ -33,6 +35,7 @@ export async function POST(request: Request) {
     const { closing } = await closeConversation({ userId, now });
     const plan = await buildPlan({ userId, now });
 
+    await persist(userId);
     return NextResponse.json({ closing, plan });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

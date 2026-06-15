@@ -257,7 +257,7 @@ export default function PanelsPhase({ userId, onRestart }: { userId: string; onR
     let alive = true;
     const id = setInterval(async () => {
       try {
-        await fetch('/api/scheduler/tick'); // fire whatever is due NOW (wall clock)
+        await fetch(`/api/scheduler/tick?userId=${encodeURIComponent(userId)}`); // fire what's due NOW (wall clock)
         if (!alive) return;
         await load(); // re-read → panels update if anything fired
         if (alive) setFailed(null);

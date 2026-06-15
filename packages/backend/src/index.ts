@@ -15,7 +15,11 @@ export { extractStory, EXTRACT_PROMPT, REASONING_MODEL } from './extract.js';
 export type { ExtractInput, ExtractOutput, ExtractResult } from './extract.js';
 
 export { store } from './store.js';
-export type { DotStore, Message, User, StatLine } from './store.js';
+export type { DotStore, Message, User, StatLine, UserSnapshot } from './store.js';
+
+// The serverless durability boundary — hydrate() one user from the shared store
+// before the engine runs, persist() after. No-op locally (the in-proc Map mode).
+export { hydrate, persist, isDurable } from './persistence.js';
 
 export {
   seedDemoUser,

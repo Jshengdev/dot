@@ -11,11 +11,12 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     ensureEnv();
-    const { buildLiveReport } = await import('@dot/backend');
+    const { buildLiveReport, hydrate } = await import('@dot/backend');
     const { searchParams } = new URL(request.url);
     const userId = (searchParams.get('userId') ?? 'demo').trim() || 'demo';
     const now = searchParams.get('now') ?? nowIso();
 
+    await hydrate(userId); // load the user's slice from the shared store (no-op locally)
     const report = buildLiveReport({ userId, now });
     return NextResponse.json({ report });
   } catch (err) {

@@ -53,9 +53,13 @@ export async function POST(request: Request) {
     }
 
     ensureEnv();
-    const { converseTurn, updateGraph, store } = await import('@dot/backend');
+    const { converseTurn, updateGraph, store, hydrate, persist } = await import('@dot/backend');
 
     const now = body.now ?? nowIso();
+
+    // Load this user's slice from the shared store (no-op locally) so the engine sees
+    // the whole conversation even on a fresh serverless instance.
+    await hydrate(userId);
 
     // Ensure the user exists (no seed — a fresh user, the record comes from the talk).
     if (!store.getUser(userId)) store.createUser({ id: userId, name: userId, createdAt: now });
@@ -65,6 +69,9 @@ export async function POST(request: Request) {
 
     // 2. Chunk the new turns into the knowledge graph (the panels read this live).
     const graph = await updateGraph({ userId, now });
+
+    // Write the updated slice back to the shared store (no-op locally).
+    await persist(userId);
 
     return NextResponse.json({
       reply: result.reply,
