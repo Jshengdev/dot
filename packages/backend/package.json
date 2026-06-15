@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@ai-sdk/xai": "^2.0.0",
+    "@neondatabase/serverless": "^0.10.0",
     "@photon-ai/advanced-imessage-kit": "1.14.3",
     "@upstash/redis": "^1.34.0",
     "ai": "^5.0.0",
