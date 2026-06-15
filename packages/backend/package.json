@@ -17,7 +17,8 @@
     "serve": "tsx src/serve-director.ts",
     "imessage": "tsx src/imessage/run.ts",
     "voice:check": "tsx src/voice/test-voice.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:durable": "tsx src/test-durable.ts"
   },
   "dependencies": {
     "@ai-sdk/xai": "^2.0.0",
