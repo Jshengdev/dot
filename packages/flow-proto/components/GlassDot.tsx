@@ -7,7 +7,6 @@ import { usePointer } from './glass/interaction/pointer';
 import { LiquidBody, Ball } from './glass/components/LiquidBody';
 import { LiquidGlass } from './glass/materials/LiquidGlass';
 import { expDamp } from './glass/sim/damp';
-import { PALETTE } from './glass/palette';
 
 // DOT's avatar — a liquid glass orb that MORPHS into being (droplets converge), then
 // a lighter, matte, semi-transparent core "turns on" and BLINKS inside the glass.
@@ -16,7 +15,7 @@ import { PALETTE } from './glass/palette';
 const VOL = new THREE.Vector3(1.5, 1.5, 0.95);
 const CORE = '#86bdff'; // lighter, lower-saturation blue (the inner presence)
 
-function Orb({ pokeRef }: { pokeRef: React.MutableRefObject<number> }) {
+function Orb() {
   const ptr = usePointer();
   const groupRef = useRef<THREE.Group>(null!);
   const coreMat = useRef<THREE.MeshStandardMaterial>(null!);
@@ -106,13 +105,11 @@ export default function GlassDot({
   className?: string;
   height?: number;
 }) {
-  const pokeRef = useRef(0);
   return (
     <div
       className={className}
       style={{ width: '100%', height, cursor: 'pointer' }}
       onPointerDown={() => {
-        pokeRef.current = 1;
         onPoke?.();
       }}
       aria-label="dot"
@@ -127,7 +124,7 @@ export default function GlassDot({
         style={{ background: 'transparent' }}
       >
         <GlassScene transparentBg>
-          <Orb pokeRef={pokeRef} />
+          <Orb />
         </GlassScene>
       </Canvas>
     </div>
