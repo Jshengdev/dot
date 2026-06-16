@@ -75,22 +75,26 @@ function buildCheckInContext(checkin: CheckIn, now: string): string {
 export interface FireInput {
   /** Injected "now" (ISO). Determinism: the core never reads the wall clock. */
   now: string;
+  /** Scope to ONE user (a route-driven tick passes this) — fire only their due
+   *  check-ins, never another user's. Omit = a trusted global cron sweep. */
+  userId?: string;
 }
 
 /**
- * fireDueCheckIns — for each due check-in (across all users; getDueCheckIns spans
- * users, each CheckIn carries its own userId), make ONE Grok call to write DOT's
- * check-in message in her voice grounded in the watched node + the user's record,
- * persist it as a 'dot' message (it lands in the thread), and mark the check-in
- * sent. Returns the CheckIns that fired (now status='sent').
+ * fireDueCheckIns — for each due check-in (scoped to `userId` when given — a
+ * route-driven tick MUST scope, so it never fires or leaks another user's
+ * risk-signal check-in text), make ONE Grok call to write DOT's check-in message in
+ * her voice grounded in the watched node + the user's record, persist it as a 'dot'
+ * message (it lands in the thread), and mark the check-in sent. Returns the CheckIns
+ * that fired (now status='sent').
  *
  * Fail loud: a model error throws (no canned fallback). The check-in is only
  * marked sent AFTER the message persists, so a thrown call leaves it 'pending'
  * and the next tick retries it.
  */
 export async function fireDueCheckIns(input: FireInput): Promise<CheckIn[]> {
-  const { now } = input;
-  const due = store.getDueCheckIns(now);
+  const { now, userId } = input;
+  const due = store.getDueCheckIns(now, userId);
   const fired: CheckIn[] = [];
 
   for (const checkin of due) {

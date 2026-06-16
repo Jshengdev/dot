@@ -20,8 +20,9 @@ async function fire(userId: string) {
   const { tick, hydrate, persist } = await import('@dot/backend');
   const now = nowIso();
   await hydrate(userId);
-  const fired = await tick({ now });
-  // Persist only if something changed (a check-in flipped to 'sent').
+  // SCOPED to this user — never fire (or leak the risk-signal text of) another user's
+  // check-ins, and the pending→sent flip is what we persist back for this user.
+  const fired = await tick({ now, userId });
   if (fired.length > 0) await persist(userId);
   return { now, fired };
 }

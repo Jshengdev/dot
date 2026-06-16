@@ -376,10 +376,18 @@ class MapStore {
   }
 
   /** The timer read: pending check-ins whose time has come (scheduledFor <= now),
-   *  soonest first. `now` is injected (determinism). */
-  getDueCheckIns(now: string): CheckIn[] {
+   *  soonest first. `now` is injected (determinism). Pass `userId` to scope to ONE
+   *  user — a route-driven tick MUST do this so it never fires (and leaks the
+   *  risk-signal prompt text of) another user's check-ins. Omit only for a trusted
+   *  cron-style global sweep. */
+  getDueCheckIns(now: string, userId?: string): CheckIn[] {
     return [...this.checkins.values()]
-      .filter((c) => c.status === 'pending' && c.scheduledFor <= now)
+      .filter(
+        (c) =>
+          c.status === 'pending' &&
+          c.scheduledFor <= now &&
+          (userId === undefined || c.userId === userId),
+      )
       .sort((a, b) => (a.scheduledFor < b.scheduledFor ? -1 : a.scheduledFor > b.scheduledFor ? 1 : 0));
   }
 
