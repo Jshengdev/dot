@@ -250,11 +250,14 @@ export async function updateGraph(input: UpdateGraphInput): Promise<Graph> {
     return store.getGraph(userId);
   }
 
-  // 2 + 3 + 4. One inferential pass per new window (merge in place).
-  for (const window of slidingWindows(newMessages)) {
-    const inference = await inferWindow(userId, window);
-    mergeInference(userId, inference);
-  }
+  // 2 + 3. Infer all new windows CONCURRENTLY — each window is one model call and is
+  //   the dominant cost of the close, so we fan them out instead of awaiting serially.
+  //   (They each read the same starting graph, so cross-window id reuse is looser, but
+  //   the store merges by stable slug id — "symptom:insomnia" etc. — so the same
+  //   concept still converges to one node.) 4. then merge in window order.
+  const windows = slidingWindows(newMessages);
+  const inferences = await Promise.all(windows.map((w) => inferWindow(userId, w)));
+  for (const inference of inferences) mergeInference(userId, inference);
 
   // 5. DERIVE the objective record from the WHOLE accumulated graph — a deterministic
   //    count over the node text, robust to the model under-tagging any single window.

@@ -29,11 +29,15 @@ export async function POST(request: Request) {
     await hydrate(userId);
     if (!store.getUser(userId)) store.createUser({ id: userId, name: userId, createdAt: now });
 
-    // 1. final chunk (catch anything since the last turn), 2. DOT's two-truths close,
-    // 3. the forward check-in plan from the graph.
+    // 1. chunk the conversation into the graph (close + plan both read the result),
+    // then 2. the two-truths close and 3. the check-in plan run CONCURRENTLY — both
+    // only READ the post-chunk graph and write to different collections, so running
+    // them together takes buildPlan's model call off the critical path.
     await updateGraph({ userId, now });
-    const { closing } = await closeConversation({ userId, now });
-    const plan = await buildPlan({ userId, now });
+    const [{ closing }, plan] = await Promise.all([
+      closeConversation({ userId, now }),
+      buildPlan({ userId, now }),
+    ]);
 
     await persist(userId);
     return NextResponse.json({ closing, plan });
