@@ -30,8 +30,10 @@ async function main(): Promise<void> {
   ]);
   await persist(U);
 
-  // 2. WIPE the whole working copy (simulate a brand-new serverless instance).
-  store.restoreUser('__wipe__', EMPTY);
+  // 2. WIPE this user's working copy (simulate a brand-new serverless instance).
+  //    restoreUser is per-user now (the serverless concurrency fix), so we wipe U
+  //    specifically — loading an EMPTY snapshot for U clears exactly U's rows.
+  store.restoreUser(U, EMPTY);
   const beforeMsgs = store.getMessages(U, 10).length;
   console.log(`after wipe: ${beforeMsgs} messages (expect 0)`);
 

@@ -64,7 +64,7 @@ export const HERO_EVENTS: SeedEvent[] = [
 // The counter-evidence shape, named so the gate can assert against it. Matches the
 // stat_sheet{} in sample-story.json.
 export const SEED_COUNTS = {
-  panicAttack: 6,
+  panicAttack: 5, // the seed has 5 panic rows (Mon–Fri club nights); sample-story's "6" was aspirational
   selfHarm: 2,
   sleepUnder6h: 2, // both seeded sleep_hours rows are < 6h (5h, 4h)
   ideation: 1,
