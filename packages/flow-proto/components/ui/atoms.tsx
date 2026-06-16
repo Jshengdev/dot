@@ -7,13 +7,11 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 export function PillButton({
   children,
   onClick,
-  variant = 'primary',
   className = '',
   disabled,
 }: {
   children: ReactNode;
   onClick?: () => void;
-  variant?: 'primary' | 'ghost';
   className?: string;
   disabled?: boolean;
 }) {
@@ -22,7 +20,7 @@ export function PillButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`pill ${variant === 'ghost' ? 'pill--ghost' : ''} ${className}`}
+      className={`pill ${className}`}
       style={disabled ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -34,13 +32,13 @@ export function PillButton({
   );
 }
 
-export function Bubble({ from, children, delay = 0 }: { from: 'dot' | 'user'; children: ReactNode; delay?: number }) {
+export function Bubble({ from, children }: { from: 'dot' | 'user'; children: ReactNode }) {
   return (
     <motion.div
       className={`bubble bubble--${from === 'dot' ? 'ai' : 'user'}`}
       initial={{ opacity: 0, y: 12, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.42, ease: EASE, delay }}
+      transition={{ duration: 0.42, ease: EASE }}
     >
       {children}
     </motion.div>
