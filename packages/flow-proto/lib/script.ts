@@ -11,7 +11,7 @@
 // ── The poke intro. DOT's blurbs (Johnny's voice — 🔒 LOCKED order). ─
 // `pokes` play SEQUENTIALLY on the first pokes (she wakes → greets → the idea →
 // the invite). After those, `pokesFun` rotate on further pokes. `hi` is her first
-// word; `beginPrompt` is the begin / tell-me-your-story affordance.
+// word.
 export const DOT = {
   hi: 'hi, this is dot.',
 
@@ -31,7 +31,4 @@ export const DOT = {
     'messy is okay. just talk.',
     'tell it how you feel. the report stays yours.',
   ],
-
-  // the begin / tell-me-your-story affordance
-  beginPrompt: 'tell it how you feel.',
 };
