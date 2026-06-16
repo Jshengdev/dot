@@ -82,6 +82,17 @@ export default function ConversePhase({ userId, onDone }: { userId: string; onDo
     scRef.current?.scrollTo({ top: scRef.current.scrollHeight, behavior: 'smooth' });
   }, [items, typing, stage, coverage]);
 
+  // DOT decides she's done: once she signals ready-to-close, she wraps up HERSELF
+  // after a short beat — no button required (that's the "dot decides you're done"
+  // moment). The "let her close" pill stays as a manual override; close() guards a
+  // double-fire (it no-ops unless stage is still 'ready-to-close').
+  useEffect(() => {
+    if (stage !== 'ready-to-close') return;
+    const t = setTimeout(() => close(), 1700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
   const composerOpen = stage === 'talking';
 
   // ── Send a user message through the LIVE pipeline (one real /api/turn). ───────

@@ -27,8 +27,8 @@ import type { ConversationMeta, Graph } from './types.js';
 // ── Tuning knobs (EDITABLE — the close thresholds the director enforces) ──────
 // DOT closes the conversation herself once the story is full ENOUGH or the chat
 // has run long enough — a real friend doesn't keep interrogating forever.
-const COVERAGE_TO_CLOSE = 0.8; // story this complete → wrap it up
-const MAX_TURNS = 6; // and never drag past this many user turns
+const COVERAGE_TO_CLOSE = 0.6; // a sharp two-truths gap forms well before "complete" — close then
+const MAX_TURNS = 5; // and never drag past this many user turns (a demo is ~4 turns)
 const CONTEXT_TURNS = 24; // how much of the thread the turn call reads
 
 // ── The per-turn boundary (the ONE generateObject schema) ─────────────────────
