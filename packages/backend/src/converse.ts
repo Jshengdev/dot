@@ -19,7 +19,7 @@
 
 import { z } from 'zod';
 import { generateObject, generateText } from 'ai';
-import { reasoningModel } from './grok.js';
+import { fastModel } from './grok.js';
 import { store } from './store.js';
 import { DOT_CHAT_SYSTEM } from './imessage/chat.js';
 import type { ConversationMeta, Graph } from './types.js';
@@ -153,7 +153,7 @@ export async function converseTurn(input: ConverseInput): Promise<ConverseResult
 
   // 4. THE ONE GROK CALL — reply + the director's read on the story.
   const { object } = await generateObject({
-    model: reasoningModel,
+    model: fastModel,
     schema: TurnSchema,
     system,
     messages,
@@ -244,7 +244,7 @@ export async function closeConversation(input: CloseInput): Promise<CloseResult>
 
   // 3. THE CLOSE CALL — DOT's two-truths reflection in her voice.
   const { text } = await generateText({
-    model: reasoningModel,
+    model: fastModel,
     system,
     messages,
   });

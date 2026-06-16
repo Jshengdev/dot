@@ -414,18 +414,24 @@ class MapStore {
     };
   }
 
-  /** Clear the working copy and load exactly one user's snapshot. Counters are
-   *  carried so freshly-minted ids continue monotonically for that user. */
+  /** Load one user's snapshot into the Map, replacing ONLY that user's rows.
+   *  Critical for serverless: the store is a shared singleton and Vercel runs
+   *  concurrent requests on one warm instance — wiping everything here would erase a
+   *  different in-flight user (the "no user in the store" crash). So we clear just
+   *  this user, leave every other user untouched, and carry counters forward by MAX
+   *  so ids stay monotonic without clobbering a concurrent user's counter. */
   restoreUser(userId: string, snap: UserSnapshot): void {
-    this.users.clear();
-    this.messages.clear();
-    this.stories.clear();
-    this.events.clear();
-    this.graphNodes.clear();
-    this.graphEdges.clear();
-    this.conversations.clear();
-    this.checkins.clear();
+    // 1. drop ONLY this user's existing rows.
+    for (const [id, m] of this.messages) if (m.userId === userId) this.messages.delete(id);
+    for (const [id, s] of this.stories) if (s.userId === userId) this.stories.delete(id);
+    for (const [id, e] of this.events) if (e.userId === userId) this.events.delete(id);
+    for (const [id, c] of this.checkins) if (c.userId === userId) this.checkins.delete(id);
+    this.users.delete(userId);
+    this.graphNodes.delete(userId);
+    this.graphEdges.delete(userId);
+    this.conversations.delete(userId);
 
+    // 2. load the snapshot for this user.
     if (snap.user) this.users.set(snap.user.id, snap.user);
     for (const m of snap.messages) this.messages.set(m.id, m);
     for (const s of snap.stories) this.stories.set(s.id, s);
@@ -436,7 +442,12 @@ class MapStore {
     for (const e of snap.graphEdges) em.set(edgeKey(e), e);
     if (snap.conversation) this.conversations.set(userId, snap.conversation);
     for (const c of snap.checkins) this.checkins.set(c.id, c);
-    this.counters = { user: 0, msg: 0, story: 0, event: 0, checkin: 0, ...snap.counters };
+
+    // 3. counters: carry forward monotonically (MAX), never reset a live counter.
+    for (const k of Object.keys(snap.counters)) {
+      const v = snap.counters[k];
+      if (typeof v === 'number' && v > (this.counters[k] ?? 0)) this.counters[k] = v;
+    }
   }
 }
 

@@ -21,6 +21,7 @@
     "test:durable": "tsx src/test-durable.ts"
   },
   "dependencies": {
+    "@ai-sdk/cerebras": "^1.0.0",
     "@ai-sdk/xai": "^2.0.0",
     "@neondatabase/serverless": "^0.10.0",
     "@photon-ai/advanced-imessage-kit": "1.14.3",

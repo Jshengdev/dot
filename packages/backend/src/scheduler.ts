@@ -19,7 +19,7 @@
 // per-tick so one bad tick doesn't kill the timer, and logs it structurally.
 
 import { generateText } from 'ai';
-import { reasoningModel } from './grok.js';
+import { fastModel } from './grok.js';
 import { store } from './store.js';
 import { DOT_CHAT_SYSTEM } from './imessage/chat.js';
 import type { CheckIn, GraphNode } from './types.js';
@@ -99,7 +99,7 @@ export async function fireDueCheckIns(input: FireInput): Promise<CheckIn[]> {
 
     // ONE Grok call — DOT's check-in message, grounded, in her voice.
     const { text } = await generateText({
-      model: reasoningModel,
+      model: fastModel,
       system,
       prompt: `Write the check-in text now. Just the message, nothing else.`,
     });

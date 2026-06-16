@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     ensureEnv();
-    const { converseTurn, updateGraph, store, hydrate, persist } = await import('@dot/backend');
+    const { converseTurn, store, hydrate, persist } = await import('@dot/backend');
 
     const now = body.now ?? nowIso();
 
@@ -64,11 +64,10 @@ export async function POST(request: Request) {
     // Ensure the user exists (no seed — a fresh user, the record comes from the talk).
     if (!store.getUser(userId)) store.createUser({ id: userId, name: userId, createdAt: now });
 
-    // 1. THE ONE GROK CALL — DOT's reply + her read on the story (coverage/close).
+    // THE ONE FAST CALL — DOT's reply + her read on the story (coverage/close), on the
+    // fast model. The heavy knowledge-graph PROCESSING runs once at /api/close (Grok),
+    // so every turn stays snappy — the conversation never waits on the graph.
     const result = await converseTurn({ userId, text, now });
-
-    // 2. Chunk the new turns into the knowledge graph (the panels read this live).
-    const graph = await updateGraph({ userId, now });
 
     // Write the updated slice back to the shared store (no-op locally).
     await persist(userId);
@@ -79,11 +78,6 @@ export async function POST(request: Request) {
       missing: result.missing,
       shouldClose: result.shouldClose,
       risk: detectRisk(text),
-      // a cheap shape of the live graph so the surface can pulse the panels as they fill
-      graphShape: {
-        nodes: graph.nodes.filter((n) => n.type !== 'turn').length,
-        edges: graph.edges.length,
-      },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

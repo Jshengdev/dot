@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { createXai } from '@ai-sdk/xai';
+import { createCerebras } from '@ai-sdk/cerebras';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -66,5 +67,18 @@ export const xai = createXai({
   baseURL: XAI_BASE_URL,
 });
 
-// The exported reasoning model — what generateObject/generateText call.
+// The exported reasoning model — the PROCESSING brain (graph chunking + the plan).
 export const reasoningModel = xai(REASONING_MODEL);
+
+// ── The FAST model — Cerebras, for DOT's conversational RESPONSES ─────────────
+// Split per the product: Cerebras (very fast inference) writes the back-and-forth
+// reply / the close / the check-in (snappy chat), while Grok above does the heavier
+// PROCESSING (the knowledge-graph extraction + the plan). Env-gated: with no
+// CEREBRAS_API_KEY it transparently falls back to the Grok reasoning model — it never
+// breaks, it just isn't fast until the key is set.
+export const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY;
+export const FAST_MODEL = process.env.DOT_FAST_MODEL ?? 'llama-3.3-70b';
+export const usingCerebras = !!CEREBRAS_API_KEY;
+export const fastModel = CEREBRAS_API_KEY
+  ? createCerebras({ apiKey: CEREBRAS_API_KEY })(FAST_MODEL)
+  : reasoningModel;
