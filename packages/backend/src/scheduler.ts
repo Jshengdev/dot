@@ -70,6 +70,29 @@ function buildCheckInContext(checkin: CheckIn, now: string): string {
   return lines.join('\n');
 }
 
+// ── Texting the phone (the iMessage bridge — the real follow-up) ───────────────
+// Dynamic-imported + fully guarded so a missing/dead bridge degrades to a logged
+// no-op (the check-in still lands in the web thread + is marked sent). A never-seen
+// thread 404s on a plain send, so we cold-start it with createChat then send the rest.
+async function maybeTextPhone(message: string): Promise<void> {
+  const phone = process.env.USER_PHONE;
+  if (!phone || !process.env.IMESSAGE_SERVER_URL || !process.env.IMESSAGE_API_KEY) return;
+  try {
+    const { connect, sendBubbles, startChat } = await import('./imessage/transport.js');
+    const { splitIntoBubbles } = await import('./imessage/bubbles.js');
+    await connect();
+    const bubbles = splitIntoBubbles(message);
+    try {
+      await sendBubbles(phone, bubbles);
+    } catch {
+      await startChat(phone, bubbles[0] ?? message); // cold-start the thread, then the rest
+      if (bubbles.length > 1) await sendBubbles(phone, bubbles.slice(1));
+    }
+  } catch (e) {
+    console.error('checkin_text_failed', e instanceof Error ? e.message : e);
+  }
+}
+
 // ── The core: fire whatever is due ────────────────────────────────────────────
 
 export interface FireInput {
@@ -112,7 +135,12 @@ export async function fireDueCheckIns(input: FireInput): Promise<CheckIn[]> {
     // Persist as a 'dot' message — it arrives in the thread like any other turn.
     store.addMessage({ userId: checkin.userId, role: 'dot', content: message, ts: now });
 
-    // Mark sent AFTER the write lands (so a thrown call above leaves it pending).
+    // ALSO text it to the phone via the iMessage bridge — the "it actually texts me"
+    // moment. Guarded: a no-op (logged) if the bridge isn't configured or is down, so a
+    // texting hiccup never blocks the check-in from being marked sent.
+    await maybeTextPhone(message);
+
+    // Mark sent AFTER the writes land (so a thrown call above leaves it pending).
     const updated = store.updateCheckIn(checkin.id, { status: 'sent', sentAt: now });
     if (updated) fired.push(updated);
   }
