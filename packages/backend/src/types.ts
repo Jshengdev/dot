@@ -190,6 +190,40 @@ export const GraphEdgeSchema = z.object({
 });
 export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
 
+// ── The CLASSIFIED CLINICAL SIGNAL — the validated meta format ─────────────────
+// The objective record is NOT a regex count. The model emits one fully-classified
+// signal per clinical pattern, carrying enough semantics that any reader (the report,
+// a clinician) can classify it WITHOUT guessing: what it is, whether the person STATED
+// it or DOT INFERRED it, how the count was derived, how severe, how sure, and which
+// turns ground it. This is the no-silent-inflation contract — a count of 1 with
+// countBasis 'single-mention' can never masquerade as 6, and every number says WHY.
+export const SIGNAL_KINDS = [
+  'panic_attack',
+  'self_harm',
+  'ideation',
+  'sleep_disturbance',
+  'somatic',
+  'other',
+] as const;
+export const SignalKindSchema = z.enum(SIGNAL_KINDS);
+export type SignalKind = z.infer<typeof SignalKindSchema>;
+
+export const ClinicalSignalSchema = z.object({
+  /** Stable id so a re-mention MERGES instead of duplicating, e.g. 'sig:panic_attack'. */
+  id: z.string(),
+  kind: SignalKindSchema, // the classification
+  label: z.string(), // a short human phrase ("panic before study group")
+  status: z.enum(['stated', 'inferred']), // did they SAY it, or did DOT infer it
+  basis: z.string(), // the evidence/reasoning for the classification + the count
+  count: z.number().int().min(0), // occurrences in the window
+  countBasis: z.enum(['single-mention', 'recurring-pattern', 'explicit-number']), // HOW the count was derived
+  severity: z.number().min(0).max(10).nullable(), // 0-10 if expressed, else null
+  timeframe: z.string().nullable(), // "this week", "every morning", or null
+  confidence: z.enum(['high', 'medium', 'low']), // how sure the classification is
+  evidenceTurnIds: z.array(z.string()), // the turns that ground it (traceable)
+});
+export type ClinicalSignal = z.infer<typeof ClinicalSignalSchema>;
+
 /** The whole graph for one user — what the intake panels read. */
 export const GraphSchema = z.object({
   nodes: z.array(GraphNodeSchema),

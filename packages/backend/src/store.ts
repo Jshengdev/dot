@@ -16,6 +16,7 @@
 
 import type {
   CheckIn,
+  ClinicalSignal,
   ConversationMeta,
   Event,
   Graph,
@@ -62,6 +63,7 @@ export interface UserSnapshot {
   graphEdges: GraphEdge[];
   conversation?: ConversationMeta;
   checkins: CheckIn[];
+  signals: ClinicalSignal[];
   counters: Record<string, number>;
 }
 
@@ -98,6 +100,7 @@ class MapStore {
   private graphNodes = new Map<string, Map<string, GraphNode>>(); // userId → (nodeId → node)
   private graphEdges = new Map<string, Map<string, GraphEdge>>(); // userId → (edgeKey → edge)
   private checkins = new Map<string, CheckIn>(); // checkInId → check-in
+  private signals = new Map<string, Map<string, ClinicalSignal>>(); // userId → (signalId → classified clinical signal)
 
   // Monotonic id counters, one namespace per collection. Deterministic, no RNG.
   private counters: Record<string, number> = {
@@ -171,6 +174,7 @@ class MapStore {
     this.graphNodes.delete(userId);
     this.graphEdges.delete(userId);
     this.conversations.delete(userId);
+    this.signals.delete(userId);
     for (const [id, c] of this.checkins) if (c.userId === userId) this.checkins.delete(id);
   }
 
@@ -356,6 +360,44 @@ class MapStore {
     };
   }
 
+  // ── clinical signals (the classified objective record — the validated meta) ──
+  // One signal per id per user, merged by id: keep the LATEST classification, the MAX
+  // count, and the union of evidence (a re-mention strengthens, never resets).
+
+  private signalMapFor(userId: string): Map<string, ClinicalSignal> {
+    let m = this.signals.get(userId);
+    if (!m) {
+      m = new Map<string, ClinicalSignal>();
+      this.signals.set(userId, m);
+    }
+    return m;
+  }
+
+  /** Merge classified signals into the user's record by id. */
+  upsertSignals(userId: string, signals: ClinicalSignal[]): void {
+    const m = this.signalMapFor(userId);
+    for (const incoming of signals) {
+      const existing = m.get(incoming.id);
+      if (!existing) {
+        m.set(incoming.id, { ...incoming, evidenceTurnIds: [...new Set(incoming.evidenceTurnIds)] });
+        continue;
+      }
+      m.set(incoming.id, {
+        ...existing,
+        ...incoming,
+        count: Math.max(existing.count, incoming.count),
+        evidenceTurnIds: [...new Set([...existing.evidenceTurnIds, ...incoming.evidenceTurnIds])],
+      });
+    }
+  }
+
+  /** The user's classified clinical signals, loudest first (severity, then count). */
+  getSignals(userId: string): ClinicalSignal[] {
+    return [...this.signalMapFor(userId).values()].sort(
+      (a, b) => (b.severity ?? 0) - (a.severity ?? 0) || b.count - a.count,
+    );
+  }
+
   // ── check-ins (the forward timer) ──────────────────────────────────────────
   // Pre-shaped CheckIns arrive with ids (or get one assigned). The timer read is
   // getDueCheckIns(now): pending + past-due, soonest first.
@@ -418,6 +460,7 @@ class MapStore {
       graphEdges: [...this.edgeMapFor(userId).values()],
       conversation: this.conversations.get(userId),
       checkins: [...this.checkins.values()].filter((c) => c.userId === userId),
+      signals: [...this.signalMapFor(userId).values()],
       counters: { ...this.counters },
     };
   }
@@ -438,6 +481,7 @@ class MapStore {
     this.graphNodes.delete(userId);
     this.graphEdges.delete(userId);
     this.conversations.delete(userId);
+    this.signals.delete(userId);
 
     // 2. load the snapshot for this user.
     if (snap.user) this.users.set(snap.user.id, snap.user);
@@ -450,8 +494,9 @@ class MapStore {
     for (const e of snap.graphEdges) em.set(edgeKey(e), e);
     if (snap.conversation) this.conversations.set(userId, snap.conversation);
     for (const c of snap.checkins) this.checkins.set(c.id, c);
+    const sm = this.signalMapFor(userId);
+    for (const sig of snap.signals ?? []) sm.set(sig.id, sig); // ?? [] tolerates pre-signals snapshots
 
-    // 3. counters: carry forward monotonically (MAX), never reset a live counter.
     for (const k of Object.keys(snap.counters)) {
       const v = snap.counters[k];
       if (typeof v === 'number' && v > (this.counters[k] ?? 0)) this.counters[k] = v;

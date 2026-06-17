@@ -45,6 +45,7 @@ const EMPTY: UserSnapshot = {
   graphNodes: [],
   graphEdges: [],
   checkins: [],
+  signals: [],
   counters: {},
 };
 

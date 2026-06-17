@@ -16,21 +16,28 @@
 // IS the safety line. Pure reads, deterministic: `now` is injected, never Date.now.
 
 import { store } from './store.js';
-import type { Graph, GraphEdge, GraphNode } from './types.js';
+import type { ClinicalSignal, Graph, GraphEdge, GraphNode, SignalKind } from './types.js';
 
-// ── KIND labels (mirror run.ts so the counted O lines read the same) ──────────
-// Maps raw events.kind to the provider-facing phrase. A kind with no entry falls
-// back to its de-underscored self — no silent drop. EDITABLE.
-const KIND_LABELS: Record<string, string> = {
-  panic_attack: 'panic attacks logged',
-  self_harm: 'self-harm events logged',
-  sleep_hours: 'nights of sleep logged',
-  ideation: 'ideation signals logged',
-  story_fact: 'facts from this story',
+// ── Signal-kind → provider-facing phrase (the classified objective lines). ────
+const SIGNAL_LABELS: Record<SignalKind, string> = {
+  panic_attack: 'panic attacks',
+  self_harm: 'self-harm',
+  ideation: 'ideation',
+  sleep_disturbance: 'sleep disturbance',
+  somatic: 'physical symptoms',
+  other: 'noted',
 };
 
-// ── The window for the counted O lines (the report's "this week") ─────────────
-const STAT_WINDOW_DAYS = 7;
+/** Render one classified signal as a provider O line — the count PLUS the meta that
+ *  says how to read it (stated vs inferred, the count basis, severity, confidence), so
+ *  no number is taken on faith and a single mention reads as 1, not many. */
+function signalLine(s: ClinicalSignal): string {
+  const label = SIGNAL_LABELS[s.kind] ?? s.kind.replace(/_/g, ' ');
+  const when = s.timeframe ? ` ${s.timeframe}` : '';
+  const sev = s.severity != null ? `, severity ${s.severity}/10` : '';
+  const basis = s.countBasis === 'single-mention' ? s.status : `${s.status}, ${s.countBasis}`;
+  return `${label}: ${s.count}${when} (${basis}${sev}, ${s.confidence} confidence)`;
+}
 
 // The edge types that express a fact/feeling GAP — where the told story and the
 // counted record pull apart. These become the neutrally-phrased gap lines.
@@ -70,6 +77,10 @@ export interface LiveReport {
   symptoms: ReportCard[];
   /** The timeline panel — event/timeframe nodes as cards (loudest first). */
   timeline: ReportCard[];
+  /** The classified clinical signals — the validated meta format that IS the objective
+   *  record: each carries kind/status/count/countBasis/severity/confidence/basis so a
+   *  reader can classify every data point without guessing. */
+  signals: ClinicalSignal[];
 }
 
 export interface BuildLiveReportInput {
@@ -155,12 +166,10 @@ export function buildLiveReport(input: BuildLiveReportInput): LiveReport {
     .sort(bySalienceDesc)
     .map((n) => n.summary);
 
-  const countedLines = store
-    .statSheet(userId, { sinceDays: STAT_WINDOW_DAYS, now })
-    .filter((s) => s.kind !== 'story_fact')
-    .map((s) => `${KIND_LABELS[s.kind] ?? s.kind.replace(/_/g, ' ')}: ${s.count} (last ${s.window})`);
-
-  const objective = [...factLines, ...countedLines];
+  // The classified clinical signals — the objective record in the validated meta
+  // format. Each O line carries its own count basis + confidence (no regex inflation).
+  const signals = store.getSignals(userId);
+  const objective = [...factLines, ...signals.map(signalLine)];
 
   // The GAP — where the told story and the record pull apart (neutral phrasing).
   const gap = graph.edges
@@ -190,5 +199,6 @@ export function buildLiveReport(input: BuildLiveReportInput): LiveReport {
     risk,
     symptoms,
     timeline,
+    signals,
   };
 }

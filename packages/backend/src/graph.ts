@@ -33,10 +33,12 @@ import { generateObject } from 'ai';
 import { reasoningModel } from './grok.js';
 import { store } from './store.js';
 import {
+  ClinicalSignalSchema,
   EDGE_WEIGHTS,
   GraphEdgeSchema,
   GraphNodeSchema,
   NodeTypeSchema,
+  type ClinicalSignal,
   type ConversationMeta,
   type Graph,
   type GraphEdge,
@@ -50,66 +52,16 @@ const WINDOW_OVERLAP = 2; // turns shared with the previous window (catch bounda
 const TURN_SUMMARY_MAX = 160; // chars before a turn node's summary is truncated
 const MESSAGE_FETCH_CAP = 10_000; // "all messages" — the log is short in the demo
 
-// The counted objective vocabulary extract.ts reflects against. A node typed as one
-// of these kinds becomes a row in the OBJECTIVE record (source='story'), so the
-// mirror's counts come from the conversation, not a seed. Keep in lockstep with
-// extract.ts::buildRecordFacts.
-const COUNTED_KINDS = ['panic_attack', 'self_harm', 'ideation', 'sleep_hours'] as const;
-type CountedKind = (typeof COUNTED_KINDS)[number];
-
-// Deterministic BACKSTOP for the objective count. The model MAY tag an occurrence, but
-// it under-tags (LLM variance — a live run extracted all the panic content as symptom/
-// fact nodes yet never set the tag, so the count came up 0). So the COUNT is derived
-// deterministically from the node text instead of trusting a model flag: scan each
-// occurrence-type node for the counted vocabulary. Precise on purpose (no bare "sleep"/
-// "chest") and ORDERED so ideation ("sleep forever") wins over a naive sleep match.
-const OCCURRENCE_NODE_TYPES = new Set(['symptom', 'fact_objective', 'event', 'risk_signal']);
-const KIND_PATTERNS: Array<[CountedKind, RegExp]> = [
-  ['ideation', /sleep forever|want to (die|disappear|sleep forever)|don'?t want to (wake|be here|live|exist)|end it all|kill myself|suicid/i],
-  ['self_harm', /scratch\w*[^.]{0,24}(arm|skin|myself|raw)|self.?harm|cutting myself|hurt(ing)? myself|leaves? marks|marks? on my/i],
-  ['panic_attack', /panic|chest (tight|pain|ache|hurt|heav)|can'?t breathe|cannot breathe|hyperventilat|heart (racing|pounding)|racing heart|hands? (go(ing)? )?numb|numb hands?/i],
-  ['sleep_hours', /\b\d+\s*(h\b|hr|hour)s?\b[^.]{0,14}sleep|sleep[^.]{0,14}\b\d+\s*(h\b|hr|hour)|insomnia|can'?t sleep|barely slept|sleepless|no sleep/i],
-];
-// "every day / daily / all week" reads as the whole window, not one event — so a panic
-// "after every club event this week" counts as the pattern it is (capped at 6). Episodic
-// kinds only; ideation/sleep are point-in-time here.
-const FREQ_RE = /every day|each day|\bdaily\b|every morning|every (club )?(event|meeting|night)|all week|this (past )?week|(6|six|7|seven) days/i;
-function occurrenceCount(text: string, kind: CountedKind): number {
-  if (kind === 'ideation' || kind === 'sleep_hours') return 1;
-  return FREQ_RE.test(text) ? 6 : 1;
-}
-function isoMinusDays(now: string, days: number): string {
-  return new Date(Date.parse(now) - days * 86_400_000).toISOString();
-}
-
 // ── The inferential-layer schema (ONE Grok-call boundary) ─────────────────────
-// The model returns ONLY the inferential layer (no 'turn' nodes). We reuse the
-// canonical node/edge shapes from types.ts so there is exactly one graph contract.
-// `occurrenceKind` is an OPTIONAL extra the model tags onto a node it recognises as
-// one of the counted objective events (panic_attack / self_harm / ideation /
-// sleep_hours); we read it to derive the objective record, then drop it (it is not
-// part of the stored GraphNode).
-const InferredNodeSchema = GraphNodeSchema.extend({
-  occurrenceKind: z
-    .enum(COUNTED_KINDS)
-    .nullish()
-    .describe(
-      'If and ONLY if this node is a concrete logged occurrence of one of the four ' +
-        'counted objective events, tag it: panic_attack | self_harm | ideation | ' +
-        'sleep_hours. Otherwise leave null. Drives the objective count.',
-    ),
-  occurrenceTs: z
-    .string()
-    .nullish()
-    .describe(
-      'ISO timestamp of the occurrence if the turns place it in time (use the ' +
-        'timeframe the person gave). Null if no time was stated.',
-    ),
-});
-
+// The model returns the inferential layer: the graph (nodes/edges, no 'turn' nodes)
+// AND the classified clinical signals[] — the VALIDATED META FORMAT that is the
+// objective record. Each signal self-describes (kind/status/count/countBasis/severity/
+// confidence/basis/evidence) so the count is the model's justified judgment, never a
+// regex guess — and a single mention can never silently inflate to many.
 const InferenceSchema = z.object({
-  nodes: z.array(InferredNodeSchema),
+  nodes: z.array(GraphNodeSchema),
   edges: z.array(GraphEdgeSchema),
+  signals: z.array(ClinicalSignalSchema),
 });
 type Inference = z.infer<typeof InferenceSchema>;
 
@@ -146,7 +98,16 @@ THE CORE TWO-TRUTHS SIGNAL: when the person DOWNPLAYS or DENIES something the tu
 
 RISK: emit a risk_signal node for any self-harm, ideation, or crisis cue, panel 'risk', and 'escalates' edges from the symptoms/events that lead toward it. Surface it calmly as a signal — never a verdict.
 
-OCCURRENCE TAGGING (for the objective count): if a node is a concrete logged occurrence of one of these four — a panic attack, a self-harm act, an ideation statement, or a night's sleep duration — set occurrenceKind to panic_attack | self_harm | ideation | sleep_hours and occurrenceTs to when it happened (if the turns say). This is how the objective record is built from the conversation. Leave occurrenceKind null for everything else.
+CLINICAL SIGNALS — output as \`signals[]\`, the OBJECTIVE RECORD in a validated meta format. Emit one classified signal per distinct clinical pattern the turns evidence. Each MUST carry enough semantics to classify it WITHOUT guessing:
+- id: stable slug 'sig:<kind>' (e.g. 'sig:panic_attack') so a re-mention merges.
+- kind: panic_attack | self_harm | ideation | sleep_disturbance | somatic | other.
+- label: a short human phrase.
+- status: 'stated' (they said it outright) or 'inferred' (you concluded it).
+- basis: the EXACT evidence + reasoning for the classification AND the count — quote their words (e.g. "user said 'panic every day this week'").
+- count + countBasis: 'single-mention' → count 1 (said once — DO NOT inflate); 'recurring-pattern' → they described a recurrence ("every day", "after every session") so count the days implied, capped at 7; 'explicit-number' → they gave a number.
+- severity: 0-10 only if they expressed intensity, else null. timeframe: their words ("this week") or null.
+- confidence: high | medium | low. evidenceTurnIds: the turns it came from.
+THE NO-INFLATION RULE (hard): a single mention is ALWAYS count 1 / 'single-mention'. A number > 1 requires recurrence language quoted in basis. Never output a number you cannot defend in basis. Scratching mentioned once is count 1, not 6.
 
 Use these default edge weights unless the turns give you strong reason to deviate: ${JSON.stringify(EDGE_WEIGHTS)}. salience is 'high' for the load-bearing concepts (the central symptom, the risk signal, the minimized truth), 'med' for supporting ones, 'low' for incidental mentions.`;
 
@@ -259,9 +220,18 @@ export async function updateGraph(input: UpdateGraphInput): Promise<Graph> {
   const inferences = await Promise.all(windows.map((w) => inferWindow(userId, w)));
   for (const inference of inferences) mergeInference(userId, inference);
 
-  // 5. DERIVE the objective record from the WHOLE accumulated graph — a deterministic
-  //    count over the node text, robust to the model under-tagging any single window.
-  deriveObjectiveRecord(userId, now);
+  // 5. The OBJECTIVE RECORD = the model's classified clinical signals (the validated
+  //    meta format), merged by id (max count, union evidence). No regex, no silent
+  //    inflation: every count carries the countBasis + basis that justifies it.
+  store.upsertSignals(
+    userId,
+    inferences.flatMap((i) => i.signals),
+  );
+
+  // SAFETY BACKSTOP — risk must NEVER depend on model whim. If the person's own words
+  // carry a crisis cue but the inferential pass missed the risk_signal, guarantee it
+  // (+ an ideation signal) deterministically. (The per-turn 988 gate is separate.)
+  ensureRiskCaptured(userId, newMessages);
 
   // 6. WATERMARK — advance to the newest message we've now chunked. Carry/seed the
   //    conversation meta (open if this is the first chunk). turnCount tracks the spine.
@@ -311,10 +281,11 @@ async function inferWindow(userId: string, window: Message[]): Promise<Inference
       `EXISTING NODE IDS (reuse one when the concept already exists):\n${existingBlock}\n\n` +
       `THE TURNS IN THIS WINDOW (link every node's evidenceTurnIds to these turn ids; ` +
       `do NOT emit turn nodes):\n${turnsBlock}\n\n` +
-      `Extract ONLY the inferential layer — symptoms, events, timeframes, people, ` +
-      `triggers, coping, the subjective-claim vs objective-fact split (emit ` +
-      `minimizes/contradicts when the person downplays or denies what these turns ` +
-      `evidence), and any risk signal. Conservative, evidence-only.`,
+      `Extract the inferential layer — the GRAPH (symptoms, events, timeframes, people, ` +
+      `triggers, coping, the subjective-claim vs objective-fact split with minimizes/` +
+      `contradicts, risk signals) AND the classified clinical signals[] (kind / status / ` +
+      `count + countBasis / severity / confidence / basis). Conservative + evidence-only; ` +
+      `never inflate a count past what its basis can justify (one mention = count 1).`,
   });
 
   return object;
@@ -351,39 +322,50 @@ function mergeInference(userId: string, inference: Inference): void {
   store.upsertEdges(userId, edges);
 }
 
-// ── (5) derive the objective record from the conversation ─────────────────────
+// ── Safety backstop: risk is deterministic, never model-dependent ─────────────
+// The model SHOULD surface risk, but a missed crisis cue is the worst failure here.
+// So we also scan the person's OWN words for cues and, if any fired but the graph has
+// no risk_signal, guarantee one + an ideation signal. Lenient by design — safety errs
+// toward the human, never away. Calm framing: a signal for a person, never a verdict.
+const RISK_CUES =
+  /sleep forever|want to (die|disappear)|don'?t want to (be here|wake up|live|exist)|end it all|kill myself|hurt(ing)? myself|harm myself|self.?harm|cut(ting)? myself|scratch\w*[^.]{0,24}(arm|skin|myself)|suicid|better off (dead|without me)|no reason to live|can'?t go on/i;
 
-/** Derive the objective record DETERMINISTICALLY from the whole graph. For each counted
- *  kind, count = the most occurrences any single occurrence-type node implies (so two
- *  nodes both mentioning panic don't double it — we take the max, not the sum). Then
- *  ensure that many events exist (stable ids `graph_<user>_<kind>_<i>`, idempotent — the
- *  count only grows as the conversation reveals more). ts is spread back day-by-day so a
- *  7-day count window picks them up; the label carries the loudest matching node. */
-function deriveObjectiveRecord(userId: string, now: string): void {
-  const nodes = store.getGraph(userId).nodes.filter((n) => OCCURRENCE_NODE_TYPES.has(n.type));
-  const want: Record<CountedKind, number> = { panic_attack: 0, self_harm: 0, ideation: 0, sleep_hours: 0 };
-  const label: Partial<Record<CountedKind, string>> = {};
-  for (const n of nodes) {
-    const text = `${n.name} ${n.summary} ${n.tags.join(' ')}`;
-    for (const [kind, re] of KIND_PATTERNS) {
-      if (!re.test(text)) continue;
-      const c = occurrenceCount(text, kind);
-      if (c > want[kind] || label[kind] === undefined) label[kind] = n.summary;
-      if (c > want[kind]) want[kind] = c;
-    }
+function ensureRiskCaptured(userId: string, newMessages: Message[]): void {
+  const riskTurns = newMessages.filter((m) => m.role === 'user' && RISK_CUES.test(m.content));
+  if (riskTurns.length === 0) return;
+  const evidence = riskTurns.map((m) => turnNodeId(m.id));
+
+  if (!store.getGraph(userId).nodes.some((n) => n.type === 'risk_signal')) {
+    store.upsertNodes(userId, [
+      {
+        id: 'risk:crisis-cue',
+        type: 'risk_signal',
+        name: 'crisis cue in their words',
+        summary:
+          'the person used language signalling possible self-harm or wanting to escape; surfaced for a human, never a verdict.',
+        tags: ['risk', 'safety'],
+        salience: 'high',
+        panel: 'risk',
+        evidenceTurnIds: evidence,
+      },
+    ]);
   }
-  for (const kind of COUNTED_KINDS) {
-    for (let i = 0; i < want[kind]; i++) {
-      const id = `graph_${userId}_${kind}_${i}`;
-      if (store.hasEvent(id)) continue; // idempotent — already counted
-      store.addEvent({
-        id,
-        userId,
-        kind,
-        label: label[kind] ?? `${kind.replace(/_/g, ' ')} (from the conversation)`,
-        source: 'story',
-        ts: isoMinusDays(now, i),
-      });
-    }
+  if (!store.getSignals(userId).some((s) => s.kind === 'ideation')) {
+    store.upsertSignals(userId, [
+      {
+        id: 'sig:ideation',
+        kind: 'ideation',
+        label: 'expressed wanting to escape / not be here',
+        status: 'stated',
+        basis: "the person's own words carried a crisis cue (deterministic safety backstop)",
+        count: 1,
+        countBasis: 'single-mention',
+        severity: null,
+        timeframe: null,
+        confidence: 'high',
+        evidenceTurnIds: evidence,
+      },
+    ]);
   }
 }
+

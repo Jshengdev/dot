@@ -10,7 +10,7 @@ import { hydrate, persist, storeMode } from './persistence.js';
 const U = 'durable_probe';
 const NOW = '2026-06-15T12:00:00.000Z';
 const EMPTY: UserSnapshot = {
-  messages: [], stories: [], events: [], graphNodes: [], graphEdges: [], checkins: [], counters: {},
+  messages: [], stories: [], events: [], graphNodes: [], graphEdges: [], checkins: [], signals: [], counters: {},
 };
 
 async function main(): Promise<void> {

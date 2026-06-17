@@ -208,13 +208,25 @@ async function main(): Promise<void> {
   assert(riskCount >= 1, `expected >=1 risk_signal node, got ${riskCount}`);
   console.log(`  PASS  risk_signal nodes: ${riskCount} (>=1)`);
 
-  // the objective record was DERIVED from the conversation, not seeded.
-  const panicEvents = store.countEvents(userId, { kind: 'panic_attack', sinceDays: 30 }, tickNow);
-  assert(
-    panicEvents > 0,
-    `expected panic_attack events DERIVED FROM THE CONVERSATION (countEvents>0), got ${panicEvents}`,
-  );
-  console.log(`  PASS  panic_attack events counted from the talk: ${panicEvents} (>0)`);
+  // the OBJECTIVE RECORD is now the classified clinical signals (the validated meta
+  // format) — derived from the talk, not seeded, each count justified by its basis.
+  const signals = store.getSignals(userId);
+  const panic = signals.find((s) => s.kind === 'panic_attack');
+  assert(!!panic && panic.count > 0, `expected a panic_attack signal with count>0, got ${JSON.stringify(panic)}`);
+  console.log(`  PASS  panic signal: count ${panic!.count} · ${panic!.countBasis} · ${panic!.confidence} confidence`);
+  // every signal carries the full meta (a reader can classify it without guessing)…
+  for (const s of signals) {
+    assert(
+      typeof s.count === 'number' && !!s.status && !!s.countBasis && !!s.confidence && !!s.basis,
+      `signal ${s.id} is missing meta fields: ${JSON.stringify(s)}`,
+    );
+    // …and the NO-INFLATION contract holds: a single mention can never exceed count 1.
+    assert(
+      s.countBasis !== 'single-mention' || s.count <= 1,
+      `INFLATION: ${s.id} is 'single-mention' but count=${s.count}`,
+    );
+  }
+  console.log(`  PASS  ${signals.length} signals — full meta on each, no single-mention inflation`);
 
   assert(plan.length >= 2, `expected plan length >=2, got ${plan.length}`);
   console.log(`  PASS  plan length: ${plan.length} (>=2)`);

@@ -69,4 +69,6 @@ export type {
   ConversationStatus,
   CheckIn,
   CheckInStatus,
+  ClinicalSignal,
+  SignalKind,
 } from './types.js';
