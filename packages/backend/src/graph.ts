@@ -324,16 +324,21 @@ function mergeInference(userId: string, inference: Inference): void {
 
 // ── Safety backstop: risk is deterministic, never model-dependent ─────────────
 // The model SHOULD surface risk, but a missed crisis cue is the worst failure here.
-// So we also scan the person's OWN words for cues and, if any fired but the graph has
-// no risk_signal, guarantee one + an ideation signal. Lenient by design — safety errs
-// toward the human, never away. Calm framing: a signal for a person, never a verdict.
-const RISK_CUES =
-  /sleep forever|want to (die|disappear)|don'?t want to (be here|wake up|live|exist)|end it all|kill myself|hurt(ing)? myself|harm myself|self.?harm|cut(ting)? myself|scratch\w*[^.]{0,24}(arm|skin|myself)|suicid|better off (dead|without me)|no reason to live|can'?t go on/i;
+// So we also scan the person's OWN words and, if a cue fired, GUARANTEE the matching
+// classified signal (self-harm and/or ideation) + a risk_signal node — even if the
+// model missed it. Cues are split so the classification is precise, not lumped.
+// Lenient by design — safety errs toward the human, never away; never a verdict.
+const SELF_HARM_CUES =
+  /scratch\w*[^.]{0,24}(arm|skin|myself|raw)|cut(ting)? myself|hurt(ing)? myself|harm(ing)? myself|self.?harm|marks? on my/i;
+const IDEATION_CUES =
+  /sleep forever|want to (die|disappear)|don'?t want to (be here|wake up|live|exist)|end it all|kill myself|suicid|better off (dead|without me)|no reason to live|can'?t go on/i;
 
 function ensureRiskCaptured(userId: string, newMessages: Message[]): void {
-  const riskTurns = newMessages.filter((m) => m.role === 'user' && RISK_CUES.test(m.content));
-  if (riskTurns.length === 0) return;
-  const evidence = riskTurns.map((m) => turnNodeId(m.id));
+  const userTurns = newMessages.filter((m) => m.role === 'user');
+  const shTurns = userTurns.filter((m) => SELF_HARM_CUES.test(m.content));
+  const idTurns = userTurns.filter((m) => IDEATION_CUES.test(m.content));
+  if (shTurns.length === 0 && idTurns.length === 0) return;
+  const allEvidence = [...new Set([...shTurns, ...idTurns].map((m) => turnNodeId(m.id)))];
 
   if (!store.getGraph(userId).nodes.some((n) => n.type === 'risk_signal')) {
     store.upsertNodes(userId, [
@@ -346,26 +351,42 @@ function ensureRiskCaptured(userId: string, newMessages: Message[]): void {
         tags: ['risk', 'safety'],
         salience: 'high',
         panel: 'risk',
-        evidenceTurnIds: evidence,
+        evidenceTurnIds: allEvidence,
       },
     ]);
   }
-  if (!store.getSignals(userId).some((s) => s.kind === 'ideation')) {
-    store.upsertSignals(userId, [
-      {
-        id: 'sig:ideation',
-        kind: 'ideation',
-        label: 'expressed wanting to escape / not be here',
-        status: 'stated',
-        basis: "the person's own words carried a crisis cue (deterministic safety backstop)",
-        count: 1,
-        countBasis: 'single-mention',
-        severity: null,
-        timeframe: null,
-        confidence: 'high',
-        evidenceTurnIds: evidence,
-      },
-    ]);
+
+  const guaranteed: ClinicalSignal[] = [];
+  if (shTurns.length > 0 && !store.getSignals(userId).some((s) => s.kind === 'self_harm')) {
+    guaranteed.push({
+      id: 'sig:self_harm',
+      kind: 'self_harm',
+      label: 'self-harm (e.g. arm-scratching to self-calm)',
+      status: 'stated',
+      basis: "the person's own words named a self-harm behavior (deterministic safety backstop)",
+      count: 1, // single-mention; the model raises it only with quoted recurrence
+      countBasis: 'single-mention',
+      severity: null,
+      timeframe: null,
+      confidence: 'high',
+      evidenceTurnIds: shTurns.map((m) => turnNodeId(m.id)),
+    });
   }
+  if (idTurns.length > 0 && !store.getSignals(userId).some((s) => s.kind === 'ideation')) {
+    guaranteed.push({
+      id: 'sig:ideation',
+      kind: 'ideation',
+      label: 'expressed wanting to escape / not be here',
+      status: 'stated',
+      basis: "the person's own words carried an ideation cue (deterministic safety backstop)",
+      count: 1,
+      countBasis: 'single-mention',
+      severity: null,
+      timeframe: null,
+      confidence: 'high',
+      evidenceTurnIds: idTurns.map((m) => turnNodeId(m.id)),
+    });
+  }
+  if (guaranteed.length > 0) store.upsertSignals(userId, guaranteed);
 }
 
