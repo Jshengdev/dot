@@ -77,7 +77,10 @@ export const reasoningModel = xai(REASONING_MODEL);
 // CEREBRAS_API_KEY it transparently falls back to the Grok reasoning model — it never
 // breaks, it just isn't fast until the key is set.
 export const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY;
-export const FAST_MODEL = process.env.DOT_FAST_MODEL ?? 'llama-3.3-70b';
+// Cerebras model for DOT's fast responses. Env-overridable (DOT_FAST_MODEL). This
+// account exposes zai-glm-4.7 + gpt-oss-120b; gpt-oss-120b follows the structured
+// reply schema reliably and is fast on Cerebras.
+export const FAST_MODEL = process.env.DOT_FAST_MODEL ?? 'gpt-oss-120b';
 export const usingCerebras = !!CEREBRAS_API_KEY;
 export const fastModel = CEREBRAS_API_KEY
   ? createCerebras({ apiKey: CEREBRAS_API_KEY })(FAST_MODEL)
