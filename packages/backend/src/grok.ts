@@ -49,9 +49,12 @@ loadEnv();
 export const XAI_API_KEY = process.env.XAI_API_KEY;
 export const XAI_BASE_URL = 'https://api.x.ai/v1';
 
-// The reasoning model slug (the fact/feeling/delta split). VERIFIED live on this
-// account per docs/KEYS.md (2026-06-13). Env-overridable for per-process control.
-export const REASONING_MODEL = process.env.DOT_REASONING_MODEL ?? 'grok-4.20-0309-reasoning';
+// The PROCESSING model — graph chunking, the check-in plan, and the structured
+// converse reply (all need reliable structured output, none need deep chain-of-
+// thought). The NON-reasoning Grok variant does structured extraction reliably and is
+// many times faster than the reasoning model (which made the close 60-100s). VERIFIED
+// available on this account. Env-overridable.
+export const REASONING_MODEL = process.env.DOT_REASONING_MODEL ?? 'grok-4.20-0309-non-reasoning';
 
 if (!XAI_API_KEY) {
   // Fail loud — never construct an unauthenticated client and pretend it works.

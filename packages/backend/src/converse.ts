@@ -19,7 +19,7 @@
 
 import { z } from 'zod';
 import { generateObject, generateText } from 'ai';
-import { fastModel } from './grok.js';
+import { fastModel, reasoningModel } from './grok.js';
 import { store } from './store.js';
 import { DOT_CHAT_SYSTEM } from './imessage/chat.js';
 import type { ConversationMeta, Graph } from './types.js';
@@ -151,9 +151,11 @@ export async function converseTurn(input: ConverseInput): Promise<ConverseResult
     `Use this to avoid re-asking what you already have, and to aim your probe at ` +
     `a real gap. This turn is #${turnCount} of at most ${MAX_TURNS}.`;
 
-  // 4. THE ONE GROK CALL — reply + the director's read on the story.
+  // 4. THE ONE CALL — reply + the director's read on the story. On the processing
+  //    model: structured output (this schema) must be reliable, and non-reasoning Grok
+  //    is both reliable and fast (Cerebras flaked the schema intermittently).
   const { object } = await generateObject({
-    model: fastModel,
+    model: reasoningModel,
     schema: TurnSchema,
     system,
     messages,
