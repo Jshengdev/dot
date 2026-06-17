@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const userId = (body.userId ?? 'demo').trim() || 'demo';
 
     ensureEnv();
-    const { updateGraph, closeConversation, buildPlan, store, hydrate, persist } =
+    const { updateGraph, closeConversation, buildPlan, store, hydrate, persist, indexPending } =
       await import('@dot/backend');
 
     const now = body.now ?? nowIso();
@@ -40,6 +40,10 @@ export async function POST(request: Request) {
     ]);
 
     await persist(userId);
+    // Register the scheduled check-ins in the global index so the background cron can
+    // find + fire them later (no-op locally; the cron texts the phone at the set time).
+    await indexPending(plan.map((c) => ({ userId, id: c.id, scheduledFor: c.scheduledFor })));
+
     return NextResponse.json({ closing, plan });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

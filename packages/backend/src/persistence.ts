@@ -66,6 +66,14 @@ async function neonSql(): Promise<Sql> {
       snapshot jsonb NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     )`;
+    // The cron has no userId, so a global index of pending check-ins lets it find who
+    // is due across all users (the per-user blobs aren't globally queryable on their own).
+    await sql!`CREATE TABLE IF NOT EXISTS dot_pending (
+      checkin_id text PRIMARY KEY,
+      user_id text NOT NULL,
+      scheduled_for timestamptz NOT NULL,
+      status text NOT NULL DEFAULT 'pending'
+    )`;
   })();
   await tableReady;
   return sql;
@@ -108,4 +116,46 @@ export async function persist(userId: string): Promise<void> {
   }
   const r = await getRedis();
   await r.set(keyFor(userId), snap);
+}
+
+// ── The cron's pending-check-in index (Neon) — the cron has no userId ─────────
+// A small global table of pending check-ins so a scheduled cron can find WHO is due
+// across all users, then hydrate + fire each. No-op in Map mode (the local in-proc
+// store already holds every user) and in Redis mode (Neon is the configured store).
+export interface PendingItem {
+  userId: string;
+  id: string;
+  scheduledFor: string;
+}
+
+/** Register a user's scheduled check-ins in the global index (call on close). */
+export async function indexPending(items: PendingItem[]): Promise<void> {
+  if (MODE !== 'neon' || items.length === 0) return;
+  const q = await neonSql();
+  for (const it of items) {
+    await q`INSERT INTO dot_pending (checkin_id, user_id, scheduled_for, status)
+            VALUES (${it.id}, ${it.userId}, ${it.scheduledFor}, 'pending')
+            ON CONFLICT (checkin_id) DO NOTHING`;
+  }
+}
+
+/** The cron read: pending check-ins whose time has come, across ALL users. */
+export async function getDuePending(now: string): Promise<PendingItem[]> {
+  if (MODE !== 'neon') return [];
+  const q = await neonSql();
+  const rows = await q`SELECT checkin_id, user_id, scheduled_for FROM dot_pending
+                       WHERE status = 'pending' AND scheduled_for <= ${now}
+                       ORDER BY scheduled_for LIMIT 200`;
+  return rows.map((r) => ({
+    userId: String(r.user_id),
+    id: String(r.checkin_id),
+    scheduledFor: String(r.scheduled_for),
+  }));
+}
+
+/** Mark fired check-ins done in the index so they never re-fire. */
+export async function markPendingSent(ids: string[]): Promise<void> {
+  if (MODE !== 'neon' || ids.length === 0) return;
+  const q = await neonSql();
+  for (const id of ids) await q`UPDATE dot_pending SET status = 'sent' WHERE checkin_id = ${id}`;
 }

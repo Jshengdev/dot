@@ -1,11 +1,11 @@
-// app/api/scheduler/tick/route.ts — THE WALL-CLOCK TICK. ONE job: fire whatever
-// check-ins are due NOW for a user. The real scheduled timer's heartbeat: the open
-// panels page (the demo) or a cron hits this on an interval, and any due check-in
-// fires a real Grok message into the thread.
+// app/api/scheduler/tick/route.ts — THE WALL-CLOCK TICK. Two modes:
+//   • ?userId=… → fire THAT user's due check-ins (the panels page polls this).
+//   • no userId → CRON mode: scan the global pending index, fire every user who's due,
+//     and text each one. This is what a Vercel Cron hits on a schedule, so follow-ups
+//     land even when no one has the app open.
 //
-// Scoped to ?userId — it hydrates that user's slice from the shared store, fires
-// only their due check-ins (with DOT_CHECKIN_SCALE compressing the plan's offsets so
-// "tomorrow" comes due within the demo), then persists. No-op store calls locally.
+// Either way a due check-in fires a real Grok message + texts USER_PHONE via the
+// bridge, and the pending→sent flip is persisted so nothing re-fires.
 //
 // Fail loud: a model/store error returns a structured 500.
 
@@ -15,26 +15,44 @@ import { ensureEnv, nowIso } from '@/lib/server-env';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-async function fire(userId: string) {
+// per-user fire (the panels page polls this with its own userId)
+async function fireForUser(userId: string) {
   ensureEnv();
   const { tick, hydrate, persist } = await import('@dot/backend');
   const now = nowIso();
   await hydrate(userId);
-  // SCOPED to this user — never fire (or leak the risk-signal text of) another user's
-  // check-ins, and the pending→sent flip is what we persist back for this user.
   const fired = await tick({ now, userId });
   if (fired.length > 0) await persist(userId);
-  return { now, fired };
+  return { now, userId, fired };
 }
 
-function userIdFrom(request: Request): string {
-  const { searchParams } = new URL(request.url);
-  return (searchParams.get('userId') ?? 'demo').trim() || 'demo';
+// cron fire (no userId) — scan the global pending index, fire each due user, text them
+async function fireCron() {
+  ensureEnv();
+  const { getDuePending, hydrate, tick, persist, markPendingSent } = await import('@dot/backend');
+  const now = nowIso();
+  const due = await getDuePending(now);
+  const userIds = [...new Set(due.map((d) => d.userId))];
+  const fired: { id: string }[] = [];
+  for (const uid of userIds) {
+    await hydrate(uid);
+    const f = await tick({ now, userId: uid });
+    if (f.length > 0) await persist(uid);
+    fired.push(...f);
+  }
+  await markPendingSent(fired.map((f) => f.id));
+  return { now, mode: 'cron', usersChecked: userIds.length, fired };
+}
+
+function userIdParam(request: Request): string | null {
+  const u = new URL(request.url).searchParams.get('userId');
+  return u && u.trim() ? u.trim() : null;
 }
 
 export async function GET(request: Request) {
   try {
-    return NextResponse.json(await fire(userIdFrom(request)));
+    const userId = userIdParam(request);
+    return NextResponse.json(userId ? await fireForUser(userId) : await fireCron());
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[api/scheduler/tick] FAILED:', message);
@@ -45,8 +63,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = (await request.json().catch(() => ({}))) as { userId?: string };
-    const userId = (body.userId ?? userIdFrom(request)).trim() || 'demo';
-    return NextResponse.json(await fire(userId));
+    const userId = (body.userId ?? userIdParam(request) ?? '').trim() || null;
+    return NextResponse.json(userId ? await fireForUser(userId) : await fireCron());
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[api/scheduler/tick] FAILED:', message);
