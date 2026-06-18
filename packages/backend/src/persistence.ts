@@ -128,15 +128,26 @@ export interface PendingItem {
   scheduledFor: string;
 }
 
+// The table's PK is checkin_id alone, but the engine's check-in ids (checkin_1,
+// checkin_2, …) are only unique WITHIN a user — so we key the index row by a
+// per-user composite (`userId::checkinId`). Without this, the 2nd+ user collides
+// on ON CONFLICT DO NOTHING and silently indexes nothing.
+const pendingKey = (userId: string, id: string) => `${userId}::${id}`;
+
 /** Register a user's scheduled check-ins in the global index (call on close). */
 export async function indexPending(items: PendingItem[]): Promise<void> {
   if (MODE !== 'neon' || items.length === 0) return;
   const q = await neonSql();
   for (const it of items) {
     await q`INSERT INTO dot_pending (checkin_id, user_id, scheduled_for, status)
-            VALUES (${it.id}, ${it.userId}, ${it.scheduledFor}, 'pending')
+            VALUES (${pendingKey(it.userId, it.id)}, ${it.userId}, ${it.scheduledFor}, 'pending')
             ON CONFLICT (checkin_id) DO NOTHING`;
   }
+}
+
+/** Build the index key the cron uses to mark a fired check-in sent (see pendingKey). */
+export function pendingKeyFor(userId: string, id: string): string {
+  return pendingKey(userId, id);
 }
 
 /** The cron read: pending check-ins whose time has come, across ALL users. */

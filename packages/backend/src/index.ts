@@ -24,7 +24,7 @@ export type { StoreMode } from './persistence.js';
 
 // The cron's pending-check-in index — so a scheduled tick (no userId) can find who's
 // due across all users, fire their check-ins, and text them.
-export { indexPending, getDuePending, markPendingSent } from './persistence.js';
+export { indexPending, getDuePending, markPendingSent, pendingKeyFor } from './persistence.js';
 export type { PendingItem } from './persistence.js';
 
 export {

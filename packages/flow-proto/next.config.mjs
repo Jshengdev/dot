@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // The 24/7 scheduler runs inside the server process via instrumentation.ts
+  // (register() on boot). Next 14 needs this flag to load that file; it's stable
+  // (no flag) in Next 15+. The loop is inert unless DOT_SCHEDULER_INLINE=1 (Railway).
+  experimental: { instrumentationHook: true },
+
   // The frozen token sheet lives at ../../design/tokens.css (single source of truth,
   // imported into app/globals.css). The glass dot is local to this package.
 

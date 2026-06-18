@@ -29,7 +29,8 @@ async function fireForUser(userId: string) {
 // cron fire (no userId) — scan the global pending index, fire each due user, text them
 async function fireCron() {
   ensureEnv();
-  const { getDuePending, hydrate, tick, persist, markPendingSent } = await import('@dot/backend');
+  const { getDuePending, hydrate, tick, persist, markPendingSent, pendingKeyFor } =
+    await import('@dot/backend');
   const now = nowIso();
   const due = await getDuePending(now);
   const userIds = [...new Set(due.map((d) => d.userId))];
@@ -37,10 +38,12 @@ async function fireCron() {
   for (const uid of userIds) {
     await hydrate(uid);
     const f = await tick({ now, userId: uid });
-    if (f.length > 0) await persist(uid);
-    fired.push(...f);
+    if (f.length > 0) {
+      await persist(uid);
+      await markPendingSent(f.map((c) => pendingKeyFor(uid, c.id)));
+      fired.push(...f);
+    }
   }
-  await markPendingSent(fired.map((f) => f.id));
   return { now, mode: 'cron', usersChecked: userIds.length, fired };
 }
 

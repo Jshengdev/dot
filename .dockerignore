@@ -1,0 +1,13 @@
+# Keep the build context lean + secret-free. node_modules are reinstalled in-image
+# (host copies are macOS-arch; the container needs linux). Secrets come from Railway
+# service variables, never a file.
+**/node_modules
+**/.next
+**/dist
+.git
+.env
+.env.*
+*.log
+.vercel
+.railway
+.DS_Store
